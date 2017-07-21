@@ -7,7 +7,7 @@ using System.IO.Ports;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-
+using System.Linq;
 namespace CDJPScanMaster
 {
     public partial class Form1 : Form
@@ -104,10 +104,27 @@ namespace CDJPScanMaster
 
         void ConnectModuleType(ModuleType moduleToConnect)
         {
-            string year, bodyStyle;
+            string year = string.Empty, bodyStyle = string.Empty;
             switch ((ModuleTypeID)moduleToConnect.ID)
             {
                 case ModuleTypeID.Engine:
+                    string engineSize = string.Empty, ecmType = string.Empty;
+                    if (!GetEngineConfigSCI(ref engineSize, ref year, ref bodyStyle, ref ecmType))
+                    {
+                        MessageBox.Show("Failed to identify engine over SCI pins 6/7.");
+                        return;
+                    }
+                    uint engineModuleId = Get_Engine_Table_ID(engineSize, year, bodyStyle, ecmType);
+                    if(engineModuleId == 0)
+                    {
+                        MessageBox.Show("Engine appears to be unsupported.\n" + 
+                            "Engine size: " + engineSize + "\n" + 
+                            "Year: " + year + "\n" + 
+                            "Body Style: " + bodyStyle + "\n" + 
+                            "ECM Type: " + ecmType);
+                        return;
+                    }
+                    LoadModuleID(engineModuleId);
                     break;
 
                 case ModuleTypeID.Transmission:
@@ -279,6 +296,352 @@ namespace CDJPScanMaster
                     LoadModuleID(otisId);
                     break;
             }
+        }
+
+        uint Get_Engine_Table_ID(string engineSize, string year, string bodyStyle, string ecmType)
+        {
+            Module mostQualifiedModule = null;
+            uint maxQualifiers = 0;
+            foreach(Module mod in drbdb.GetModules().Where(mod => mod.ModuleTypeID == 1))
+            {
+                uint tempQualifiers = mod.TestModuleQualifiers(engineSize, year, bodyStyle, ecmType);
+                if(tempQualifiers > maxQualifiers)
+                {
+                    maxQualifiers = tempQualifiers;
+                    mostQualifiedModule = mod;
+                }
+            }
+            if (mostQualifiedModule == null) return 0;
+            return mostQualifiedModule.ID;
+        }
+
+        bool GetEngineConfigSCI(ref string engineSize, ref string year, ref string bodyStyle, ref string ecuType)
+        {
+            // try SBECII
+            List<byte> sciResp = SendMessageAndGetResponse(0x16, 0x81);
+            if (sciResp.Count == 2 && GetSCIBytes(5, out sciResp))
+            {
+                year = (1990 + (sciResp[2] & 0x0F)).ToString();
+                engineSize = GetEngineSize_SBECII((byte)(sciResp[2] >> 4), (byte)((sciResp[3] >> 3) & 7));
+                ecuType = "SBEC/SBECII";
+                sciResp = SendMessageAndGetResponse(0x16, 0x82);
+                if (sciResp.Count != 2 || !GetSCIBytes(5, out sciResp)) return false;//not sure how to handle this, failure is the only way
+                bodyStyle = GetBodyStyle_SBECII(sciResp[0], sciResp[1], sciResp[2]);
+                return true;
+            }
+            else // try SBECIII / JTEC
+            {
+                sciResp = SendMessageAndGetResponse(0x2A, 0x0B);
+                if (sciResp.Count != 2) return false;
+                year = (1990 + sciResp[1]).ToString();
+                sciResp = SendMessageAndGetResponse(0x2A, 0x0C);
+                if (sciResp.Count != 2) return false;
+                engineSize = GetEngineSize_SBECIII_JTEC(sciResp[1]);
+                sciResp = SendMessageAndGetResponse(0x2A, 0x0F);
+                if (sciResp.Count != 2) return false;
+                ecuType = GetEngineControllerType_Mode2A(sciResp[1]);
+                sciResp = SendMessageAndGetResponse(0x2A, 0x10);
+                if (sciResp.Count != 2) return false;
+                bodyStyle = GetBodyStyle_SBECIII_JTEC(sciResp[1]);
+                return true;
+            }
+            
+        }
+
+        string GetBodyStyle_SBECIII_JTEC(byte style)
+        {
+            switch(style)
+            {
+                case 1:
+                    return "YJ";
+                case 2:
+                    return "XJ";
+                case 3:
+                    return "ZJ";
+                case 4:
+                    return "FJ";
+                case 5:
+                    return "PL";
+                case 6:
+                    return "JA";
+                case 7:
+                    return "AA";
+                case 8:
+                    return "AC";
+                case 9:
+                    return "AS";
+                case 10:
+                    return "LH";
+                case 11:
+                    return "NS";
+                case 12:
+                    return "AB";
+                case 13:
+                    return "AN";
+                case 14:
+                    return "BR";
+                case 15:
+                    return "SR";
+                case 16:
+                    return "AN";
+                case 17:
+                    return "AN";
+                case 18:
+                    return "JX";
+                case 19:
+                    return "PR";
+                case 20:
+                    return "TJ";
+                case 21:
+                    return "DN";
+                case 22:
+                    return "WJ";
+                case 23:
+                    return "SJ";
+                case 24:
+                    return "JR";
+                case 25:
+                    return "PT";
+                case 26:
+                    return "RS";
+                case 27:
+                    return "KJ";
+                case 28:
+                    return "DR";
+                case 29:
+                    return "AN84";
+                case 30:
+                    return "ZB";
+            }
+            throw new ArgumentException("(BARF)");
+        }
+
+        string GetBodyStyle_SBECII(byte b1, byte b2, byte b3)
+        {
+            switch (b1 & 0x07)
+            {
+                case 1:
+                    return "YJ";
+                case 2:
+                    return "XJ";
+                case 4:
+                    return "ZJ";
+            }
+            switch (b2)
+            {
+                case 2:
+                    return "FJ";
+                case 4:
+                    return "PL";
+                case 8:
+                    return "JA";
+                case 16:
+                    return "AA"; //  AA/AG/AJ/AP 
+                case 32:
+                    return "AC"; //  AC/AY
+                case 64:
+                    return "AS";
+                case 128:
+                    return "LH";
+            }
+            switch (b3)
+            {
+                case 1:
+                    return "AB";
+                case 2:
+                    return "AN";
+                case 4:
+                    return "BR";
+                case 8:
+                    return "SR";
+            }
+            throw new ArgumentException("(BAAAARF)");
+        }
+
+        string GetEngineSize_SBECIII_JTEC(byte engineCfg)
+        {
+            switch(engineCfg)
+            {
+                case 1:
+                    return "2.2L I4";
+                case 2:
+                    return "2.5L I4";
+                case 3:
+                    return "3.0L V6";
+                case 4:
+                    return "3.3L V6";
+                case 5:
+                    return "3.9L V6";
+                case 6:
+                    return "5.2L V8";
+                case 7:
+                    return "5.9L V8";
+                case 8:
+                    return "3.8L V6";
+                case 9:
+                    return "4.0L I6";
+                case 10:
+                    return "2.0L I4 SOHC";
+                case 11:
+                    return "3.5L V6";
+                case 12:
+                    return "8.0L V10";
+                case 13:
+                    return "2.4L I4";
+                case 14:
+                    return "2.5L I4";
+                case 15:
+                    return "2.5L V6";
+                case 16:
+                    return "2.0L I4 DOHC";
+                case 17:
+                    return "2.5L V6";
+                case 18:
+                    return "5.9L I6";
+                case 19:
+                    return "3.3L V6";
+                case 20:
+                    return "2.7L V6";
+                case 21:
+                    return "3.2L V6";
+                case 22:
+                    return "1.8L I4";
+                case 23:
+                    return "3.7L V6";
+                case 24:
+                    return "4.7L V8";
+                case 25:
+                    return "1.9L I4";
+                case 26:
+                    return "3.1L I5";
+                case 27:
+                    return "1.6L I4";
+                case 28:
+                    return "2.7L V6";
+                case 29:
+                    return "5.7L V8";
+                case 30:
+                    return "8.3L V10";
+                case 31:
+                    return "2.7L I5";
+                case 32:
+                    return "2.8L I4";
+            }
+            throw new ArgumentException("(BARF)");
+        }
+
+        string GetEngineControllerType_Mode2A(byte ecmType)
+        {
+            switch(ecmType)
+            {
+                case 1:
+                    return "FCC";
+                case 2:
+                case 3:
+                case 4:
+                    return "SBEC/SBECII";
+                case 5:
+                    return "SBECIII";
+                case 6:
+                case 13:
+                case 20:
+                    return "JTEC";
+                case 7:
+                    return "SBECIIIA";
+                case 8:
+                    return "SBECIII+";
+                case 9:
+                    return "CM551";
+                case 10:
+                case 15:
+                case 16:
+                case 25:
+                    return "Bosch";
+                case 11:
+                    return "Northrop";
+                case 12:
+                case 14:
+                    return "JTEC+";
+                case 17:
+                    return "Siemens";
+                case 18:
+                    return "SBECIIIA+";
+                case 19:
+                    return "SBECIIIB";
+                case 21:
+                    return "CM845";
+                case 22:
+                    return "CM846";
+                case 23:
+                    return "Cummins";
+                case 24:
+                    return "CM848";
+            }
+            throw new ArgumentException("(BARF)");
+        }
+
+        string GetEngineSize_SBECII(byte engineCfg, byte manufacturer)
+        {
+            switch(engineCfg)
+            {
+                case 0:
+                    return "2.2L I4";
+                case 1:
+                    return "2.5L I4";
+                case 2:
+                    return "3.0L V6";
+                case 3:
+                    return "3.3L V6";
+                case 4:
+                    return "3.9L V6";
+                case 5:
+                    return "5.2L V8";
+                case 6:
+                    if(manufacturer == 6) //Cummins
+                    {
+                        return "5.9L I6";
+                    }
+                    else
+                    {
+                        return "5.9L V8";
+                    }
+                case 7:
+                    return "3.8L V8";
+                case 8:
+                    return "4.0L I6";
+                case 9:
+                    return "2.0L I4 SOHC";
+                case 10:
+                    return "3.5L V6";
+                case 11:
+                    return "8.0L V10";
+                case 12:
+                    return "2.4L I4";
+                case 13:
+                    return "2.0L I4 DOHC";
+            }
+            throw new ArgumentException("i dont know what to do with this");
+        }
+
+        bool GetSCIByte(ref byte receivedByte)
+        {
+            responseReceived.Reset();
+            if (!responseReceived.WaitOne(150)) return false;
+            if (response.Count != 1) throw new ArgumentException(); // sum ting wong
+            receivedByte = response[0];
+            return true;
+        }
+
+        bool GetSCIBytes(int count, out List<byte> sciBytes)
+        {
+            sciBytes = new List<byte>(count);
+            byte recdByteTemp = 0;
+            for(int i=0; i < count; i++)
+            {
+                if (!GetSCIByte(ref recdByteTemp)) return false;
+                sciBytes.Add(recdByteTemp);
+            }
+            return true;
         }
 
         uint Get_SentryKeyModule_Table_ID(string year)
@@ -910,6 +1273,97 @@ namespace CDJPScanMaster
             }
             else throw new Exception();
 
+        }
+    }
+
+    public static class Extensions
+    {
+        public static uint TestModuleQualifiers(this Module module, string engineSize, string year, string bodyStyle, string ecmStyle)
+        {
+            if (module.Name == null) return 0;
+            string modName = module.Name.ResourceString.
+            Replace('(', ' ').
+            Replace(')', ' ').
+            Replace('/', ' ').
+            Replace("SBEC3", "SBECIII").
+            Replace("SBEC 3A", "SBECIIIA").
+            Replace("Prowler", "PR").
+            Replace("Dakota", "AN").
+            Replace("Viper", "SR").
+            Replace("FOUR-CYL", "2.5");
+            uint count = 0;
+            List<string> engineSizes = new List<string>();
+            List<string> bodyStyles = new List<string>();
+            foreach (string token in modName.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (token.Length >= 3 && token[1] == '.')
+                {
+                    engineSizes.Add(token);
+                }
+                else if (token.Length == 2 && char.IsLetter(token[0]) && char.IsLetter(token[1]))
+                {
+                    bodyStyles.Add(token);
+                }
+                else if (token.Length == 2 && char.IsDigit(token[0]) && char.IsDigit(token[1]))
+                {
+                    if (token[0] != '9' && token[0] != '0') //engine size
+                    {
+                        engineSizes.Add(token[0] + "." + token[1]);
+                    }
+                    else if (year.Substring(2) == token)
+                    {
+                        count++;
+                    }
+                }
+                else if (token.Contains("SBEC") || token.Contains("JTEC") || token.Contains("Siemens"))
+                {
+                    if (ecmStyle == token) count++;
+                }
+            }
+            if (modName.Contains("18PL"))
+            {
+                engineSizes.Add("1.8");
+                bodyStyles.Add("PL");
+            }
+            if (engineSizes.Count == 0)
+            {
+                if (modName.Contains("V6") && engineSize.Contains("V6")) count++;
+                if (modName.Contains("V10") && engineSize.Contains("V10")) count++;
+            }
+            foreach (string engineSizeComp in engineSizes)
+            {
+                if (engineSizeComp == "5.9")
+                {
+                    if (modName.Contains("DIESEL"))
+                    {
+                        if (engineSize == "5.9L I6") count++;
+                    }
+                    else if (engineSize == "5.9L V8") count++;
+                }
+                else
+                {
+                    if (engineSize.StartsWith(engineSizeComp))
+                    {
+                        if (modName.Contains("V6"))
+                        {
+                            if (engineSize.Contains("V6")) count++;
+                        }
+                        else if (modName.Contains("V10"))
+                        {
+                            if (engineSize.Contains("V10")) count++;
+                        }
+                        else
+                        {
+                            count++;
+                        }
+                    }
+                }
+            }
+            foreach (string bodyStyleComp in bodyStyles)
+            {
+                if (bodyStyle == bodyStyleComp.ToUpper()) count++;
+            }
+            return count;
         }
     }
 }

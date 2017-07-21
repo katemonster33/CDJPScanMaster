@@ -211,3 +211,7 @@ _Pvt_Extensions
 
 # I just don't even...
 *.VC.opendb
+*.exe
+Binary/CDJPScanMaster.exe.config
+Binary/DRBDBReader.exe.config
+Binary/database.mem
