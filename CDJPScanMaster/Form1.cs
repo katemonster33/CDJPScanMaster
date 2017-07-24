@@ -49,6 +49,12 @@ namespace CDJPScanMaster
             }
         }
 
+        void ConnectChannel(ArduinoCommChannel channel)
+        {
+            string channelCommand = string.Format("{0:d}\n", (int)channel);
+            arduino.Write(channelCommand);
+        }
+
         void ProcessMessage(string message)
         {
             List<byte> messageHex = new List<byte>();
@@ -109,10 +115,15 @@ namespace CDJPScanMaster
             {
                 case ModuleTypeID.Engine:
                     string engineSize = string.Empty, ecmType = string.Empty;
+                    ConnectChannel(ArduinoCommChannel.SCI_A_Engine);
                     if (!GetEngineConfigSCI(ref engineSize, ref year, ref bodyStyle, ref ecmType))
                     {
-                        MessageBox.Show("Failed to identify engine over SCI pins 6/7.");
-                        return;
+                        ConnectChannel(ArduinoCommChannel.SCI_B_Engine);
+                        if (!GetEngineConfigSCI(ref engineSize, ref year, ref bodyStyle, ref ecmType))
+                        {
+                            MessageBox.Show("Failed to identify engine over SCI, A configuration or B configuration.");
+                            return;
+                        }
                     }
                     uint engineModuleId = Get_Engine_Table_ID(engineSize, year, bodyStyle, ecmType);
                     if(engineModuleId == 0)
@@ -331,21 +342,22 @@ namespace CDJPScanMaster
             }
             else // try SBECIII / JTEC
             {
+                byte mode2AData = 0;
                 sciResp = SendMessageAndGetResponse(0x2A, 0x0B);
-                if (sciResp.Count != 2) return false;
-                year = (1990 + sciResp[1]).ToString();
+                if (sciResp.Count != 2 || !GetSCIByte(ref mode2AData)) return false;
+
+                year = (1990 + mode2AData).ToString();
                 sciResp = SendMessageAndGetResponse(0x2A, 0x0C);
-                if (sciResp.Count != 2) return false;
-                engineSize = GetEngineSize_SBECIII_JTEC(sciResp[1]);
+                if (sciResp.Count != 2 || !GetSCIByte(ref mode2AData)) return false;
+                engineSize = GetEngineSize_SBECIII_JTEC(mode2AData);
                 sciResp = SendMessageAndGetResponse(0x2A, 0x0F);
-                if (sciResp.Count != 2) return false;
-                ecuType = GetEngineControllerType_Mode2A(sciResp[1]);
+                if (sciResp.Count != 2 || !GetSCIByte(ref mode2AData)) return false;
+                ecuType = GetEngineControllerType_Mode2A(mode2AData);
                 sciResp = SendMessageAndGetResponse(0x2A, 0x10);
-                if (sciResp.Count != 2) return false;
-                bodyStyle = GetBodyStyle_SBECIII_JTEC(sciResp[1]);
+                if (sciResp.Count != 2 || !GetSCIByte(ref mode2AData)) return false;
+                bodyStyle = GetBodyStyle_SBECIII_JTEC(mode2AData);
                 return true;
             }
-            
         }
 
         string GetBodyStyle_SBECIII_JTEC(byte style)
@@ -826,6 +838,7 @@ namespace CDJPScanMaster
         string GetRadioModel()
         {
             connectedProtocol = Protocol.CCD;
+            ConnectChannel(ArduinoCommChannel.CCD);
             List<byte> ccdResponse = SendMessageAndGetResponse(0xB2, 0x96, 0x24, 0x10, 0x00);
             if(ccdResponse.Count == 5)
             {
@@ -844,6 +857,7 @@ namespace CDJPScanMaster
             else
             {
                 connectedProtocol = Protocol.J1850;
+                ConnectChannel(ArduinoCommChannel.J1850);
                 List<byte> j1850Response = SendMessageAndGetResponse(0x24, 0x80, 0x22, 0x20, 0x01, 0x00);
                 if (j1850Response.Count != 6) return string.Empty;
                 return Encoding.ASCII.GetString(j1850Response.ToArray(), 3, 3);
@@ -1100,6 +1114,8 @@ namespace CDJPScanMaster
         void GetBodyStyleAndYearFromBCM(out string bodyStyle, out string year)
         {
             bodyStyle = year = null;
+            connectedProtocol = Protocol.CCD;
+            ConnectChannel(ArduinoCommChannel.CCD);
             List<byte> bodyResp = SendMessageAndGetResponse(0xB2, 0x20, 0x24, 0x01, 0x00);
             if (bodyResp.Count == 5)
             {
@@ -1109,6 +1125,7 @@ namespace CDJPScanMaster
             else // try J1850
             {
                 connectedProtocol = Protocol.J1850;
+                ConnectChannel(ArduinoCommChannel.J1850);
                 bodyResp = SendMessageAndGetResponse(0x24, 0x40, 0x22, 0x28, 0x00, 0x00);
                 if (bodyResp.Count != 5) return;
                 bodyStyle = GetBodyStyleFromBytes_PCI(bodyResp[3]);
@@ -1122,6 +1139,8 @@ namespace CDJPScanMaster
         void GetBodyStyleAndYearFromCluster(out string bodyStyle, out string year)
         {
             bodyStyle = year = null;
+            connectedProtocol = Protocol.CCD;
+            ConnectChannel(ArduinoCommChannel.CCD);
             List<byte> bodyResp = SendMessageAndGetResponse(0xB2, 0x20, 0x24, 0x01, 0x00);
             if (bodyResp.Count == 5)
             {
@@ -1131,6 +1150,7 @@ namespace CDJPScanMaster
             else // try J1850
             {
                 connectedProtocol = Protocol.J1850;
+                ConnectChannel(ArduinoCommChannel.J1850);
                 bodyResp = SendMessageAndGetResponse(0x24, 0x60, 0x22, 0x28, 0x00, 0x00);
                 if (bodyResp.Count != 5) return;
                 bodyStyle = GetBodyStyleFromBytes_PCI(bodyResp[3]);
