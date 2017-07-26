@@ -20,5 +20,10 @@
                 return name ?? (name = database.GetResource(NameID));
             }
         }
+
+        public override string ToString()
+        {
+            return Name != null ? Name.ResourceString : ID.ToString();
+        }
     }
 }
