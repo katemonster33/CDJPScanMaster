@@ -25,7 +25,7 @@
 
         public override string ToString()
         {
-            return name != null ? name.ResourceString : ID.ToString();
+            return Name != null ? Name.ResourceString : ID.ToString();
         }
     }
 }
