@@ -8,18 +8,22 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Linq;
+using System.Management;
+using System.Threading.Tasks;
+using System.IO;
+
 namespace CDJPScanMaster
 {
     public partial class Form1 : Form
     {
         SerialPort arduino;
-        bool connected = true;
+        bool connected = false;
+        Task readTask, queryTask;
+        ManualResetEvent queryTaskStopSignal = new ManualResetEvent(false);
         Protocol connectedProtocol = Protocol.CCD;
         Module selectedModule = null;
         ManualResetEvent responseReceived = new ManualResetEvent(false);
         List<byte> response = new List<byte>();
-        char[] serialBuffer = new char[100];
-        int serialBufferLen = 0;
         Database drbdb = new Database();
         public Form1()
         {
@@ -29,22 +33,77 @@ namespace CDJPScanMaster
                 listBox1.Items.Add(type);
             }
             listBox1.Tag = drbdb.GetModuleTypes();
-            string[] comPorts = SerialPort.GetPortNames();
-            arduino = new SerialPort(comPorts[0], 115200, Parity.None, 8, StopBits.One);
-            arduino.DataReceived += Arduino_DataReceived;
+            arduino = new SerialPort("COM16", 115200, Parity.None, 8, StopBits.One);
+            arduino.DtrEnable = true;
+            arduino.RtsEnable = true;
+            arduino.Open();
+            readTask = new Task(ReadThread);
+            readTask.Start();
         }
 
-        private void Arduino_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        void ReadThread()
         {
-            string buf = arduino.ReadExisting();
-            for (int i = 0; i < buf.Length; i++)
+            try
             {
-                serialBuffer[serialBufferLen] = buf[i];
-                serialBufferLen++;
-                if(buf[i] == '\n')
+                string buf = string.Empty;
+                while (true)
                 {
-                    ProcessMessage(new string(serialBuffer));
-                    serialBufferLen = 0;
+                    try
+                    {
+                        buf = arduino.ReadLine();
+                    }
+                    catch (TimeoutException)
+                    {
+                        continue;
+                    }
+                    ProcessMessage(buf.TrimEnd('\r'));
+                    Thread.Sleep(1);
+                }
+            }
+            catch (IOException) { }
+            catch (InvalidOperationException) { }
+        }
+        List<TXItem> visibleTxItems = new List<TXItem>();
+        void QueryThread()
+        {
+            queryTaskStopSignal.Reset();
+            bool isHighSpeedSciMode = false;
+            while (!queryTaskStopSignal.WaitOne(1))
+            {
+                for (int i = 0; i < visibleTxItems.Count; i++)
+                {
+                    TXItem tx = visibleTxItems[i];
+                    if (tx.TransmitBytes.Length == 0 || tx.DataAcquisitionMethod == null || (tx.TransmitBytes.Length == 1 && tx.TransmitBytes[0] == 0)) continue;
+                    if (connectedProtocol == Protocol.SCI)
+                    {
+                        if (!isHighSpeedSciMode && tx.TransmitBytes[0] >= 0xF0)
+                        {
+                            SendMessageAndGetResponse(0x12);
+                            isHighSpeedSciMode = true;
+                        }
+                        if (isHighSpeedSciMode && tx.TransmitBytes[0] < 0xF0)
+                        {
+                            SendMessageAndGetResponse(0xFE);
+                            Thread.Sleep(165);
+                            isHighSpeedSciMode = false;
+                        }
+                    }
+                    byte[] xmitTemp = new byte[tx.DataAcquisitionMethod.RequestLen];
+                    Array.Copy(tx.TransmitBytes, xmitTemp, tx.DataAcquisitionMethod.RequestLen);
+                    List<byte> response = SendMessageAndGetResponse(xmitTemp);
+                    if (response.Count == tx.DataAcquisitionMethod.ResponseLen)
+                    {
+                        byte[] dataBytes = tx.DataAcquisitionMethod.ExtractData(response.ToArray());
+                        int data = 0;
+                        for (int j = 0, shift = 0; j < dataBytes.Length; j++, shift += 8)
+                        {
+                            data |= dataBytes[j] << shift;
+                        }
+                        float dataFlt = (tx.DataScaler != null ? tx.DataScaler.ScaleData(data) : data);
+                        string dataStr = (tx.DataFormatter != null ? tx.DataFormatter.FormatData(dataFlt, true) : dataFlt.ToString());
+                        int tmpIndex = i;
+                        lstDataMenuTXs.BeginInvoke((Action)(() => lstDataMenuTXs.Items[tmpIndex].SubItems[1].Text = dataStr));
+                    }
                 }
             }
         }
@@ -53,21 +112,35 @@ namespace CDJPScanMaster
         {
             string channelCommand = string.Format("{0:d}\n", (int)channel);
             arduino.Write(channelCommand);
+            responseReceived.Reset();
+            txtSerialLog.InvokeIfRequired(() => txtSerialLog.AppendText("(TX) " + channelCommand));
+            responseReceived.WaitOne(1000);
         }
 
         void ProcessMessage(string message)
         {
+            txtSerialLog.BeginInvoke((Action)(() => txtSerialLog.AppendText("(RX) " + message + '\n')));
+            if (message == "OKGO")
+            {
+                connected = true;
+                return;
+            }
+            else if (!isHexString(message))
+            {
+                responseReceived.Set();
+                return;
+            }
             List<byte> messageHex = new List<byte>();
             for (int i = 0; i < message.Length; i += 2)
             {
                 messageHex.Add(readHex(message[i], message[i + 1]));
             }
-            if (messageHex.Count > 1)
+            if (messageHex.Count >= 1)
             {
                 bool isResponse = false;
                 if (connectedProtocol == Protocol.CCD || connectedProtocol == Protocol.CCD_2)
                 {
-                    isResponse = (messageHex[0] == 0xB2 && messageHex.Count == 5);
+                    isResponse = (messageHex[0] == 0xF2 && messageHex.Count == 5);
                 }
                 else if (connectedProtocol == Protocol.J1850)
                 {
@@ -85,6 +158,15 @@ namespace CDJPScanMaster
             }
         }
 
+        bool isHexString(string str)
+        {
+            foreach(char c in str)
+            {
+                if (!(char.IsDigit(c) || (c >= 'A' && c <= 'F'))) return false;
+            }
+            return true;
+        }
+
         byte readHex(char hexA, char hexB)
         {
             return (byte)((readHex(hexA) << 4) | readHex(hexB));
@@ -98,20 +180,10 @@ namespace CDJPScanMaster
             else throw new ArgumentException();
         }
 
-        private void listBox1_SelectedValueChanged(object sender, EventArgs e)
-        {
-            if (listBox1.SelectedValue == null) return;
-            if(listBox1.SelectedValue.GetType() == typeof(ModuleType))
-            {
-                ModuleType moduleToConnect = (ModuleType)listBox1.SelectedValue;
-                ConnectModuleType(moduleToConnect);
-            }
-        }
-
         void ConnectModuleType(ModuleType moduleToConnect)
         {
             string year = string.Empty, bodyStyle = string.Empty;
-            switch ((ModuleTypeID)moduleToConnect.ID)
+            switch ((ModuleTypeID)moduleToConnect.TypeID)
             {
                 case ModuleTypeID.Engine:
                     string engineSize = string.Empty, ecmType = string.Empty;
@@ -153,17 +225,16 @@ namespace CDJPScanMaster
                     {
                         level = "Base"; //it's possible the BCM doesn't support this command ID - in that case, it's likely just a base module.
                     }
+                    uint moduleId = Get_Body_Table_ID(year, bodyStyle, level);
+                    if (moduleId == 0)
                     {
-                        uint moduleId = Get_Body_Table_ID(year, bodyStyle, level);
-                        if (moduleId == 0)
-                        {
-                            MessageBox.Show("This combination of BCM appears to be unsupported. \n" +
-                                "Year: " + year + "\n" +
-                                "Body Style: " + bodyStyle + "\n" +
-                                "BCM Style: " + level);
-                            return;
-                        }
+                        MessageBox.Show("This combination of BCM appears to be unsupported. \n" +
+                            "Year: " + year + "\n" +
+                            "Body Style: " + bodyStyle + "\n" +
+                            "BCM Style: " + level);
+                        return;
                     }
+                    LoadModuleID(moduleId);
                     break;
 
                 case ModuleTypeID.Brakes:
@@ -313,7 +384,7 @@ namespace CDJPScanMaster
         {
             Module mostQualifiedModule = null;
             uint maxQualifiers = 0;
-            foreach(Module mod in drbdb.GetModules().Where(mod => mod.ModuleTypeID == 1))
+            foreach(Module mod in drbdb.GetModules().Where(mod => mod.ModuleTypeID == (uint)ModuleTypeID.Engine))
             {
                 uint tempQualifiers = mod.TestModuleQualifiers(engineSize, year, bodyStyle, ecmType);
                 if(tempQualifiers > maxQualifiers)
@@ -328,6 +399,7 @@ namespace CDJPScanMaster
 
         bool GetEngineConfigSCI(ref string engineSize, ref string year, ref string bodyStyle, ref string ecuType)
         {
+            connectedProtocol = Protocol.SCI;
             // try SBECII
             List<byte> sciResp = SendMessageAndGetResponse(0x16, 0x81);
             if (sciResp.Count == 2 && GetSCIBytes(5, out sciResp))
@@ -997,14 +1069,49 @@ namespace CDJPScanMaster
             listBox1.InvokeIfRequired(() =>
             {
                 listBox1.Items.Clear();
-                List<Function> moduleFunctions = drbdb.GetModuleFunctionsWithoutTX(selectedModule);
-                foreach (ModuleMenuItem mmi in drbdb.GetModuleMenuItems())
+                List<Function> modulesFunctions = drbdb.GetModuleFunctionsWithoutTX(selectedModule);
+                Dictionary<uint, TXItem> FunctionIDToTXItem = new Dictionary<uint, TXItem>();
+                foreach (TXItem item in selectedModule.TXItems.Where(tx => tx.Function != null))
                 {
-
+                    FunctionIDToTXItem[item.FunctionID] = item;
+                }
+                foreach (ModuleMenuItem moduleMenu in drbdb.GetModuleMenuItems())
+                {
+                    if (moduleMenu.ID == 1 || moduleMenu.ID == 4)
+                    {
+                        ListView targetBox = (moduleMenu.ID == 1 ? lstTests : lstActuators);
+                        foreach (TXItem item in selectedModule.TXItems.Where(item => item.ModuleMenuID == moduleMenu.ID &&
+                            item.Function != null && item.Function.LinkedFunctions.Any()))
+                        {
+                            TestObject test = new TestObject(item, GetFunctionTXChildren(FunctionIDToTXItem, item.Function).ToList());
+                            targetBox.Items.Add(test.ToString()).Tag = test;
+                        }
+                        foreach (Function modMenuFunc in modulesFunctions.Where(func => func.ModuleMenuID == moduleMenu.ID))
+                        {
+                            TestObject test = new TestObject(modMenuFunc, GetFunctionTXChildren(FunctionIDToTXItem, modMenuFunc).ToList());
+                            targetBox.Items.Add(test.ToString()).Tag = test;
+                        }
+                    }
+                    else if(selectedModule.TXItems.Where(item => item.ModuleMenuID == moduleMenu.ID).Any())
+                    {
+                        lstDataMenus.Items.Add(moduleMenu);
+                    }
                 }
             });
         }
-        
+
+        IEnumerable<TXItem> GetFunctionTXChildren(Dictionary<uint, TXItem> FunctionIDToTXItem, Function func)
+        {
+            TXItem linkedItemTemp = null;
+            foreach (Function linkedFunction in func.LinkedFunctions)
+            {
+                if (FunctionIDToTXItem.TryGetValue(linkedFunction.ID, out linkedItemTemp))
+                {
+                    yield return linkedItemTemp;
+                }
+            }
+        }
+
         uint Get_Body_Table_ID(string year, string bodyStyle, string bcmStyle)
         {
             switch(bodyStyle)
@@ -1119,8 +1226,8 @@ namespace CDJPScanMaster
             List<byte> bodyResp = SendMessageAndGetResponse(0xB2, 0x20, 0x24, 0x01, 0x00);
             if (bodyResp.Count == 5)
             {
-                year = string.Format("19{0:X2}", bodyResp[4]);
-                bodyStyle = GetBodyStyleFromBytes_CCD(bodyResp[5]);
+                year = string.Format("19{0:X2}", bodyResp[3]);
+                bodyStyle = GetBodyStyleFromBytes_CCD(bodyResp[4]);
             }
             else // try J1850
             {
@@ -1265,7 +1372,7 @@ namespace CDJPScanMaster
             string messageAscii = string.Empty;
             for(int i=0; i < message.Length; i++)
             {
-                messageAscii += fromHex((byte)(message[i] >> 4)) + fromHex((byte)(message[i] & 0x0F));
+                messageAscii += string.Format("{0:X2}", message[i]);
             }
             messageAscii += '\n';
             responseReceived.Reset();
@@ -1273,12 +1380,13 @@ namespace CDJPScanMaster
             for (int retry = 0; retry < 3; retry++)
             {
                 arduino.Write(messageAscii);
+                txtSerialLog.BeginInvoke((Action)(() => txtSerialLog.AppendText("(TX) " + messageAscii)));
                 if (responseReceived.WaitOne(500))
                 {
-                    break;
+                    return new List<byte>(response);
                 }
             }
-            return response;
+            return new List<byte>();
         }
 
         char fromHex(byte nibble)
@@ -1293,6 +1401,77 @@ namespace CDJPScanMaster
             }
             else throw new Exception();
 
+        }
+
+        //private string AutodetectArduinoPort()
+        //{
+        //    ManagementScope connectionScope = new ManagementScope();
+        //    SelectQuery serialQuery = new SelectQuery("SELECT * FROM Win32_SerialPort");
+        //    ManagementObjectSearcher searcher = new ManagementObjectSearcher(connectionScope, serialQuery);
+
+        //    try
+        //    {
+        //        foreach (ManagementObject item in searcher.Get())
+        //        {
+        //            string desc = item["Description"].ToString();
+        //            string deviceId = item["DeviceID"].ToString();
+
+        //            if (desc.Contains("Arduino"))
+        //            {
+        //                return deviceId;
+        //            }
+        //        }
+        //    }
+        //    catch (ManagementException e)
+        //    {
+        //        /* Do Nothing */
+        //    }
+
+        //    return null;
+        //}
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBox1.SelectedIndex == -1 || listBox1.SelectedItem == null || listBox1.SelectedItem.GetType() != typeof(ModuleType)) return;
+            ModuleType type = (ModuleType)listBox1.SelectedItem;
+            Task.Factory.StartNew(() => ConnectModuleType(type));
+        }
+
+        void StopQuerying()
+        {
+            if (queryTask != null)
+            {
+                queryTaskStopSignal.Set();
+                queryTask.Wait();
+                queryTask.Dispose();
+                queryTask = null;
+            }
+        }
+
+        private void lstDataMenus_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lstDataMenus.SelectedItem == null) return;
+            ModuleMenuItem moduleMenu = (ModuleMenuItem)lstDataMenus.SelectedItem;
+            StopQuerying();
+            lstDataMenuTXs.InvokeIfRequired(() =>
+            {
+                lstDataMenuTXs.Items.Clear();
+                visibleTxItems = selectedModule.TXItems.Where(item => item.ModuleMenuID == moduleMenu.ID).ToList();
+                foreach (TXItem tx in visibleTxItems)
+                {
+                    ListViewItem newItem = new ListViewItem(tx.Name.ResourceString) { Tag = tx };
+                    newItem.SubItems.Add(string.Empty);
+                    lstDataMenuTXs.Items.Add(newItem);
+                }
+            });
+            queryTask = new Task(QueryThread);
+            queryTask.Start();
+        }
+
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //StopQuerying();
+            //lstDataMenuTXs.Items.Clear();
         }
     }
 
@@ -1350,38 +1529,50 @@ namespace CDJPScanMaster
                 if (modName.Contains("V6") && engineSize.Contains("V6")) count++;
                 if (modName.Contains("V10") && engineSize.Contains("V10")) count++;
             }
-            foreach (string engineSizeComp in engineSizes)
+            if (engineSizes.Any())
             {
-                if (engineSizeComp == "5.9")
+                bool anyEnginesMatched = false;
+                foreach (string engineSizeComp in engineSizes)
                 {
-                    if (modName.Contains("DIESEL"))
+                    if (engineSizeComp == "5.9")
                     {
-                        if (engineSize == "5.9L I6") count++;
+                        if (modName.Contains("DIESEL"))
+                        {
+                            if (engineSize == "5.9L I6") anyEnginesMatched = true;
+                        }
+                        else if (engineSize == "5.9L V8") anyEnginesMatched = true;
                     }
-                    else if (engineSize == "5.9L V8") count++;
-                }
-                else
-                {
-                    if (engineSize.StartsWith(engineSizeComp))
+                    else
                     {
-                        if (modName.Contains("V6"))
+                        if (engineSize.StartsWith(engineSizeComp))
                         {
-                            if (engineSize.Contains("V6")) count++;
-                        }
-                        else if (modName.Contains("V10"))
-                        {
-                            if (engineSize.Contains("V10")) count++;
-                        }
-                        else
-                        {
-                            count++;
+                            if (modName.Contains("V6"))
+                            {
+                                if (engineSize.Contains("V6")) anyEnginesMatched = true;
+                            }
+                            else if (modName.Contains("V10"))
+                            {
+                                if (engineSize.Contains("V10")) anyEnginesMatched = true;
+                            }
+                            else
+                            {
+                                anyEnginesMatched = true;
+                            }
                         }
                     }
                 }
+                if (anyEnginesMatched) count++;
+                else return 0;
             }
-            foreach (string bodyStyleComp in bodyStyles)
+            if (bodyStyles.Any())
             {
-                if (bodyStyle == bodyStyleComp.ToUpper()) count++;
+                bool anyBodyMatched = false;
+                foreach (string bodyStyleComp in bodyStyles)
+                {
+                    if (bodyStyle == bodyStyleComp.ToUpper()) anyBodyMatched = true;
+                }
+                if (anyBodyMatched) count++;
+                else return 0;
             }
             return count;
         }
