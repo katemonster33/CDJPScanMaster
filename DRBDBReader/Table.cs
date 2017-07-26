@@ -86,7 +86,16 @@ namespace DRBDB
 
         public float ReadFloatField(byte[] database, int readOffset, byte colIndex)
         {
-            return BitConverter.ToSingle(database, readOffset + colOffsets[colIndex]);
+            if (db.isStarScanDB)
+            {
+                return BitConverter.ToSingle(database, readOffset + colOffsets[colIndex]);
+            }
+            else
+            {
+                int offset = readOffset + colOffsets[colIndex];
+                byte[] floatBytes = new byte[] { database[offset + 3], database[offset + 2], database[offset + 1], database[offset] };
+                return BitConverter.ToSingle(floatBytes, 0);
+            }
         }
 
         public byte[] ReadFieldRaw(byte[] table, int readOffset, byte col)
