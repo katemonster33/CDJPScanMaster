@@ -38,7 +38,7 @@
         public string FormatData(float inputData, bool isMetric)
         {
             if (isMetric) inputData = inputData * MetricConversionSlope + MetricConversionOffset;
-            string formatted = inputData.ToString(".##");
+            string formatted = inputData.ToString();
             if (isMetric)
             {
                 if (MetricUnitName != null) formatted += " " + MetricUnitName.ResourceString;
