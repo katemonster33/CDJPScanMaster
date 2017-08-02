@@ -16,14 +16,10 @@ namespace CDJPScanMaster
 {
     public partial class Form1 : Form
     {
-        SerialPort arduino;
-        bool connected = false;
-        Task readTask, queryTask;
+        ArduinoCommHandler arduino;
+        Task queryTask;
         ManualResetEvent queryTaskStopSignal = new ManualResetEvent(false);
-        Protocol connectedProtocol = Protocol.CCD;
         Module selectedModule = null;
-        ManualResetEvent responseReceived = new ManualResetEvent(false);
-        List<byte> response = new List<byte>();
         Database drbdb = new Database();
         System.Windows.Forms.Timer listBoxUpdater = new System.Windows.Forms.Timer();
         public Form1()
@@ -34,12 +30,7 @@ namespace CDJPScanMaster
                 listBox1.Items.Add(type);
             }
             listBox1.Tag = drbdb.GetModuleTypes();
-            arduino = new SerialPort("COM16", 115200, Parity.None, 8, StopBits.One);
-            arduino.DtrEnable = true;
-            arduino.RtsEnable = true;
-            arduino.Open();
-            readTask = new Task(ReadThread);
-            readTask.Start();
+            arduino = ArduinoCommHandler.CreateCommHandler("COM16");
             listBoxUpdater.Interval = 100;
             listBoxUpdater.Tick += ListBoxUpdater_Tick;
         }
@@ -58,29 +49,6 @@ namespace CDJPScanMaster
                 }
             }
         }
-
-        void ReadThread()
-        {
-            try
-            {
-                string buf = string.Empty;
-                while (true)
-                {
-                    try
-                    {
-                        buf = arduino.ReadLine();
-                    }
-                    catch (TimeoutException)
-                    {
-                        continue;
-                    }
-                    ProcessMessage(buf.TrimEnd('\r'));
-                    Thread.Sleep(1);
-                }
-            }
-            catch (IOException) { }
-            catch (InvalidOperationException) { }
-        }
         List<TXItem> visibleTxItems = new List<TXItem>();
         void QueryThread()
         {
@@ -93,23 +61,23 @@ namespace CDJPScanMaster
                 {
                     TXItem tx = visibleTxItems[i];
                     if (tx.TransmitBytes.Length == 0 || tx.DataAcquisitionMethod == null || (tx.TransmitBytes.Length == 1 && tx.TransmitBytes[0] == 0)) continue;
-                    if (connectedProtocol == Protocol.SCI)
+                    if (arduino.ConnectedProtocol == Protocol.SCI)
                     {
                         if (!isHighSpeedSciMode && tx.TransmitBytes[0] >= 0xF0)
                         {
-                            SendMessageAndGetResponse(0x12);
+                            arduino.SendMessageAndGetResponse(0x12);
                             isHighSpeedSciMode = true;
                         }
                         if (isHighSpeedSciMode && tx.TransmitBytes[0] < 0xF0)
                         {
-                            SendMessageAndGetResponse(0xFE);
+                            arduino.SendMessageAndGetResponse(0xFE);
                             Thread.Sleep(165);
                             isHighSpeedSciMode = false;
                         }
                     }
                     byte[] xmitTemp = new byte[tx.DataAcquisitionMethod.RequestLen];
                     Array.Copy(tx.TransmitBytes, xmitTemp, tx.DataAcquisitionMethod.RequestLen);
-                    List<byte> response = SendMessageAndGetResponse(xmitTemp);
+                    List<byte> response = arduino.SendMessageAndGetResponse(xmitTemp);
                     if (response.Count == tx.DataAcquisitionMethod.ResponseLen)
                     {
                         byte[] dataBytes = tx.DataAcquisitionMethod.ExtractData(response.ToArray());
@@ -125,78 +93,6 @@ namespace CDJPScanMaster
             listBoxUpdater.Enabled = false;
         }
 
-        void ConnectChannel(ArduinoCommChannel channel)
-        {
-            string channelCommand = string.Format("{0:d}\n", (int)channel);
-            arduino.Write(channelCommand);
-            responseReceived.Reset();
-            txtSerialLog.InvokeIfRequired(() => txtSerialLog.AppendText("(TX) " + channelCommand));
-            responseReceived.WaitOne(1000);
-        }
-
-        void ProcessMessage(string message)
-        {
-            txtSerialLog.BeginInvoke((Action)(() => txtSerialLog.AppendText("(RX) " + message + '\n')));
-            if (message == "OKGO")
-            {
-                connected = true;
-                return;
-            }
-            else if (!isHexString(message))
-            {
-                responseReceived.Set();
-                return;
-            }
-            List<byte> messageHex = new List<byte>();
-            for (int i = 0; i < message.Length; i += 2)
-            {
-                messageHex.Add(readHex(message[i], message[i + 1]));
-            }
-            if (messageHex.Count >= 1)
-            {
-                bool isResponse = false;
-                if (connectedProtocol == Protocol.CCD || connectedProtocol == Protocol.CCD_2)
-                {
-                    isResponse = (messageHex[0] == 0xF2 && messageHex.Count == 5);
-                }
-                else if (connectedProtocol == Protocol.J1850)
-                {
-                    isResponse = (messageHex.Count > 2 && messageHex[0] == 0x26 && ((messageHex[2] & 0x40) != 0));
-                }
-                else //if (connectedProtocol == Protocol.SCI || connectedProtocol == Protocol.SCI_NGC || connectedProtocol == Protocol.KWP2000)
-                {
-                    isResponse = true;
-                }
-                if(isResponse)
-                {
-                    response = messageHex;
-                    responseReceived.Set();
-                }
-            }
-        }
-
-        bool isHexString(string str)
-        {
-            foreach(char c in str)
-            {
-                if (!(char.IsDigit(c) || (c >= 'A' && c <= 'F'))) return false;
-            }
-            return true;
-        }
-
-        byte readHex(char hexA, char hexB)
-        {
-            return (byte)((readHex(hexA) << 4) | readHex(hexB));
-        }
-
-        byte readHex(char hex)
-        {
-            if (hex >= '0' && hex <= '9') return (byte)(hex - '0');
-            else if (hex >= 'a' && hex <= 'f') return (byte)(hex - 'a' + 10);
-            else if (hex >= 'A' && hex <= 'F') return (byte)(hex - 'A' + 10);
-            else throw new ArgumentException();
-        }
-
         void ConnectModuleType(ModuleType moduleToConnect)
         {
             string year = string.Empty, bodyStyle = string.Empty;
@@ -204,10 +100,10 @@ namespace CDJPScanMaster
             {
                 case ModuleTypeID.Engine:
                     string engineSize = string.Empty, ecmType = string.Empty;
-                    ConnectChannel(ArduinoCommChannel.SCI_A_Engine);
+                    arduino.ConnectChannel(ArduinoCommChannel.SCI_A_Engine);
                     if (!GetEngineConfigSCI(ref engineSize, ref year, ref bodyStyle, ref ecmType))
                     {
-                        ConnectChannel(ArduinoCommChannel.SCI_B_Engine);
+                        arduino.ConnectChannel(ArduinoCommChannel.SCI_B_Engine);
                         if (!GetEngineConfigSCI(ref engineSize, ref year, ref bodyStyle, ref ecmType))
                         {
                             MessageBox.Show("Failed to identify engine over SCI, A configuration or B configuration.");
@@ -416,34 +312,33 @@ namespace CDJPScanMaster
 
         bool GetEngineConfigSCI(ref string engineSize, ref string year, ref string bodyStyle, ref string ecuType)
         {
-            connectedProtocol = Protocol.SCI;
             // try SBECII
-            List<byte> sciResp = SendMessageAndGetResponse(0x16, 0x81);
-            if (sciResp.Count == 2 && GetSCIBytes(5, out sciResp))
+            List<byte> sciResp = arduino.SendMessageAndGetResponse(0x16, 0x81);
+            if (sciResp.Count == 2 && arduino.GetSCIBytes(5, out sciResp))
             {
                 year = (1990 + (sciResp[2] & 0x0F)).ToString();
                 engineSize = GetEngineSize_SBECII((byte)(sciResp[2] >> 4), (byte)((sciResp[3] >> 3) & 7));
                 ecuType = "SBEC/SBECII";
-                sciResp = SendMessageAndGetResponse(0x16, 0x82);
-                if (sciResp.Count != 2 || !GetSCIBytes(5, out sciResp)) return false;//not sure how to handle this, failure is the only way
+                sciResp = arduino.SendMessageAndGetResponse(0x16, 0x82);
+                if (sciResp.Count != 2 || !arduino.GetSCIBytes(5, out sciResp)) return false;//not sure how to handle this, failure is the only way
                 bodyStyle = GetBodyStyle_SBECII(sciResp[0], sciResp[1], sciResp[2]);
                 return true;
             }
             else // try SBECIII / JTEC
             {
                 byte mode2AData = 0;
-                sciResp = SendMessageAndGetResponse(0x2A, 0x0B);
-                if (sciResp.Count != 2 || !GetSCIByte(ref mode2AData)) return false;
+                sciResp = arduino.SendMessageAndGetResponse(0x2A, 0x0B);
+                if (sciResp.Count != 2 || !arduino.GetSCIByte(ref mode2AData)) return false;
 
                 year = (1990 + mode2AData).ToString();
-                sciResp = SendMessageAndGetResponse(0x2A, 0x0C);
-                if (sciResp.Count != 2 || !GetSCIByte(ref mode2AData)) return false;
+                sciResp = arduino.SendMessageAndGetResponse(0x2A, 0x0C);
+                if (sciResp.Count != 2 || !arduino.GetSCIByte(ref mode2AData)) return false;
                 engineSize = GetEngineSize_SBECIII_JTEC(mode2AData);
-                sciResp = SendMessageAndGetResponse(0x2A, 0x0F);
-                if (sciResp.Count != 2 || !GetSCIByte(ref mode2AData)) return false;
+                sciResp = arduino.SendMessageAndGetResponse(0x2A, 0x0F);
+                if (sciResp.Count != 2 || !arduino.GetSCIByte(ref mode2AData)) return false;
                 ecuType = GetEngineControllerType_Mode2A(mode2AData);
-                sciResp = SendMessageAndGetResponse(0x2A, 0x10);
-                if (sciResp.Count != 2 || !GetSCIByte(ref mode2AData)) return false;
+                sciResp = arduino.SendMessageAndGetResponse(0x2A, 0x10);
+                if (sciResp.Count != 2 || !arduino.GetSCIByte(ref mode2AData)) return false;
                 bodyStyle = GetBodyStyle_SBECIII_JTEC(mode2AData);
                 return true;
             }
@@ -724,30 +619,9 @@ namespace CDJPScanMaster
             throw new ArgumentException("i dont know what to do with this");
         }
 
-        bool GetSCIByte(ref byte receivedByte)
-        {
-            responseReceived.Reset();
-            if (!responseReceived.WaitOne(150)) return false;
-            if (response.Count != 1) throw new ArgumentException(); // sum ting wong
-            receivedByte = response[0];
-            return true;
-        }
-
-        bool GetSCIBytes(int count, out List<byte> sciBytes)
-        {
-            sciBytes = new List<byte>(count);
-            byte recdByteTemp = 0;
-            for(int i=0; i < count; i++)
-            {
-                if (!GetSCIByte(ref recdByteTemp)) return false;
-                sciBytes.Add(recdByteTemp);
-            }
-            return true;
-        }
-
         uint Get_SentryKeyModule_Table_ID(string year)
         {
-            if (connectedProtocol == Protocol.CCD) return 4181;
+            if (arduino.ConnectedProtocol == Protocol.CCD) return 4181;
             else
             {
                 if (int.Parse(year) >= 2003) return 4327; //SKREEM
@@ -836,10 +710,10 @@ namespace CDJPScanMaster
                 case "ZJ":
                     return 1497;
                 case "TJ":
-                    if (connectedProtocol == Protocol.J1850) return 4212;
+                    if (arduino.ConnectedProtocol == Protocol.J1850) return 4212;
                     else return 1498;
                 case "AN":
-                    if (connectedProtocol == Protocol.J1850) return 4014;
+                    if (arduino.ConnectedProtocol == Protocol.J1850) return 4014;
                     else return 1499;
                 case "XJ":
                     return 1500;
@@ -852,7 +726,7 @@ namespace CDJPScanMaster
                     // CONCORDE/INTREPID vs LHS/300M ???
                     return 4008;
                 case "DN":
-                    if (connectedProtocol == Protocol.J1850) return 4014;
+                    if (arduino.ConnectedProtocol == Protocol.J1850) return 4014;
                     else return 4009;
                 case "AB":
                     return 4010;
@@ -904,7 +778,7 @@ namespace CDJPScanMaster
                     return 4049;
                 case "AN":
                 case "DN":
-                    if (connectedProtocol == Protocol.J1850) return 4054;
+                    if (arduino.ConnectedProtocol == Protocol.J1850) return 4054;
                     else return 4050;
                 case "XJ":
                     return 4051;
@@ -926,28 +800,26 @@ namespace CDJPScanMaster
 
         string GetRadioModel()
         {
-            connectedProtocol = Protocol.CCD;
-            ConnectChannel(ArduinoCommChannel.CCD);
-            List<byte> ccdResponse = SendMessageAndGetResponse(0xB2, 0x96, 0x24, 0x10, 0x00);
+            arduino.ConnectChannel(ArduinoCommChannel.CCD);
+            List<byte> ccdResponse = arduino.SendMessageAndGetResponse(0xB2, 0x96, 0x24, 0x10, 0x00);
             if(ccdResponse.Count == 5)
             {
                 string model = string.Empty;
                 model += (char)ccdResponse[3];
 
-                ccdResponse = SendMessageAndGetResponse(0xB2, 0x96, 0x24, 0x11, 0x00);
+                ccdResponse = arduino.SendMessageAndGetResponse(0xB2, 0x96, 0x24, 0x11, 0x00);
                 if (ccdResponse.Count != 5) return string.Empty;
                 model += (char)ccdResponse[3];
 
-                ccdResponse = SendMessageAndGetResponse(0xB2, 0x96, 0x24, 0x12, 0x00);
+                ccdResponse = arduino.SendMessageAndGetResponse(0xB2, 0x96, 0x24, 0x12, 0x00);
                 if (ccdResponse.Count != 5) return string.Empty;
                 model += (char)ccdResponse[3];
                 return model;
             }
             else
             {
-                connectedProtocol = Protocol.J1850;
-                ConnectChannel(ArduinoCommChannel.J1850);
-                List<byte> j1850Response = SendMessageAndGetResponse(0x24, 0x80, 0x22, 0x20, 0x01, 0x00);
+                arduino.ConnectChannel(ArduinoCommChannel.J1850);
+                List<byte> j1850Response = arduino.SendMessageAndGetResponse(0x24, 0x80, 0x22, 0x20, 0x01, 0x00);
                 if (j1850Response.Count != 6) return string.Empty;
                 return Encoding.ASCII.GetString(j1850Response.ToArray(), 3, 3);
             }
@@ -963,10 +835,10 @@ namespace CDJPScanMaster
                 case "RAD":
                     return 4033;
                 case "RAZ":
-                    if (connectedProtocol == Protocol.J1850) return 4035;
+                    if (arduino.ConnectedProtocol== Protocol.J1850) return 4035;
                     else return 4034;
                 case "RBN":
-                    if (connectedProtocol == Protocol.J1850) return 4037;
+                    if (arduino.ConnectedProtocol == Protocol.J1850) return 4037;
                     else return 4036;
                 case "RBL":
                     return 4038;
@@ -1213,34 +1085,33 @@ namespace CDJPScanMaster
 
         bool GetIsClimateModuleCommunicating()
         {
-            if(connectedProtocol == Protocol.J1850)
+            if(arduino.ConnectedProtocol == Protocol.J1850)
             {
-                List<byte> j1850Response = SendMessageAndGetResponse(0x24, 0x98, 0x22, 0x24, 0x00, 0x00);
+                List<byte> j1850Response = arduino.SendMessageAndGetResponse(0x24, 0x98, 0x22, 0x24, 0x00, 0x00);
                 if (j1850Response.Count > 0) return true;
             }
             //no matter what, try CCD as a backup
-            List<byte> ccdResponse = SendMessageAndGetResponse(0xB2, 0x98, 0x24, 0x01, 0x00);
+            List<byte> ccdResponse = arduino.SendMessageAndGetResponse(0xB2, 0x98, 0x24, 0x01, 0x00);
             return ccdResponse.Count> 0;
         }
 
         bool GetIsTheftModuleCommunicating()
         {
-            if (connectedProtocol == Protocol.J1850)
+            if (arduino.ConnectedProtocol == Protocol.J1850)
             {
-                List<byte> j1850Response = SendMessageAndGetResponse(0x24, 0xA0, 0x22, 0x24, 0x00, 0x00);
+                List<byte> j1850Response = arduino.SendMessageAndGetResponse(0x24, 0xA0, 0x22, 0x24, 0x00, 0x00);
                 if (j1850Response.Count > 0) return true;
             }
             //no matter what, try CCD as a backup
-            List<byte> ccdResponse = SendMessageAndGetResponse(0xB2, 0xA0, 0x24, 0x00, 0x00);
+            List<byte> ccdResponse = arduino.SendMessageAndGetResponse(0xB2, 0xA0, 0x24, 0x00, 0x00);
             return ccdResponse.Count > 0;
         }
 
         void GetBodyStyleAndYearFromBCM(out string bodyStyle, out string year)
         {
             bodyStyle = year = null;
-            connectedProtocol = Protocol.CCD;
-            ConnectChannel(ArduinoCommChannel.CCD);
-            List<byte> bodyResp = SendMessageAndGetResponse(0xB2, 0x20, 0x24, 0x01, 0x00);
+            arduino.ConnectChannel(ArduinoCommChannel.CCD);
+            List<byte> bodyResp = arduino.SendMessageAndGetResponse(0xB2, 0x20, 0x24, 0x01, 0x00);
             if (bodyResp.Count == 5)
             {
                 year = string.Format("19{0:X2}", bodyResp[3]);
@@ -1248,13 +1119,12 @@ namespace CDJPScanMaster
             }
             else // try J1850
             {
-                connectedProtocol = Protocol.J1850;
-                ConnectChannel(ArduinoCommChannel.J1850);
-                bodyResp = SendMessageAndGetResponse(0x24, 0x40, 0x22, 0x28, 0x00, 0x00);
+                arduino.ConnectChannel(ArduinoCommChannel.J1850);
+                bodyResp = arduino.SendMessageAndGetResponse(0x24, 0x40, 0x22, 0x28, 0x00, 0x00);
                 if (bodyResp.Count != 5) return;
                 bodyStyle = GetBodyStyleFromBytes_PCI(bodyResp[3]);
 
-                bodyResp = SendMessageAndGetResponse(0x24, 0x40, 0x22, 0x28, 0x01, 0x00);
+                bodyResp = arduino.SendMessageAndGetResponse(0x24, 0x40, 0x22, 0x28, 0x01, 0x00);
                 year = string.Format("{0:X2}{1:X2}", bodyResp[3], bodyResp[4]);
                 if (bodyResp.Count != 5) return;
             }
@@ -1263,9 +1133,8 @@ namespace CDJPScanMaster
         void GetBodyStyleAndYearFromCluster(out string bodyStyle, out string year)
         {
             bodyStyle = year = null;
-            connectedProtocol = Protocol.CCD;
-            ConnectChannel(ArduinoCommChannel.CCD);
-            List<byte> bodyResp = SendMessageAndGetResponse(0xB2, 0x20, 0x24, 0x01, 0x00);
+            arduino.ConnectChannel(ArduinoCommChannel.CCD);
+            List<byte> bodyResp = arduino.SendMessageAndGetResponse(0xB2, 0x20, 0x24, 0x01, 0x00);
             if (bodyResp.Count == 5)
             {
                 year = string.Format("19{0:X2}", bodyResp[4]);
@@ -1273,13 +1142,12 @@ namespace CDJPScanMaster
             }
             else // try J1850
             {
-                connectedProtocol = Protocol.J1850;
-                ConnectChannel(ArduinoCommChannel.J1850);
-                bodyResp = SendMessageAndGetResponse(0x24, 0x60, 0x22, 0x28, 0x00, 0x00);
+                arduino.ConnectChannel(ArduinoCommChannel.J1850);
+                bodyResp = arduino.SendMessageAndGetResponse(0x24, 0x60, 0x22, 0x28, 0x00, 0x00);
                 if (bodyResp.Count != 5) return;
                 bodyStyle = GetBodyStyleFromBytes_PCI(bodyResp[3]);
 
-                bodyResp = SendMessageAndGetResponse(0x24, 0x60, 0x22, 0x28, 0x01, 0x00);
+                bodyResp = arduino.SendMessageAndGetResponse(0x24, 0x60, 0x22, 0x28, 0x01, 0x00);
                 year = string.Format("{0:X2}{1:X2}", bodyResp[3], bodyResp[4]);
                 if (bodyResp.Count != 5) return;
             }
@@ -1367,7 +1235,7 @@ namespace CDJPScanMaster
 
         string GetBCMModuleLevel_CCD()
         {
-            List<byte> bodyResp = SendMessageAndGetResponse(0xB2, 0x20, 0x24, 0x02, 0x00);
+            List<byte> bodyResp = arduino.SendMessageAndGetResponse(0xB2, 0x20, 0x24, 0x02, 0x00);
             if(bodyResp.Count != 5)
             {
                 return null;
@@ -1382,28 +1250,6 @@ namespace CDJPScanMaster
                 case 2:
                     return "Premium";
             }
-        }
-
-        List<byte> SendMessageAndGetResponse(params byte[] message)
-        {
-            string messageAscii = string.Empty;
-            for(int i=0; i < message.Length; i++)
-            {
-                messageAscii += string.Format("{0:X2}", message[i]);
-            }
-            messageAscii += '\n';
-            responseReceived.Reset();
-            response.Clear();
-            for (int retry = 0; retry < 3; retry++)
-            {
-                arduino.Write(messageAscii);
-                txtSerialLog.BeginInvoke((Action)(() => txtSerialLog.AppendText("(TX) " + messageAscii)));
-                if (responseReceived.WaitOne(500))
-                {
-                    return new List<byte>(response);
-                }
-            }
-            return new List<byte>();
         }
 
         //private string AutodetectArduinoPort()

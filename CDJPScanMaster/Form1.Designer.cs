@@ -18,10 +18,7 @@
                 components.Dispose();
             }
             StopQuerying();
-            arduino.Close();
             arduino.Dispose();
-            readTask.Wait();
-            readTask.Dispose();
             listBoxUpdater.Dispose();
             base.Dispose(disposing);
         }
