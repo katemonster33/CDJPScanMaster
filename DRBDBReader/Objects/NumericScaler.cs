@@ -1,4 +1,6 @@
-﻿namespace DRBDB.Objects
+﻿using DRBDB.Helpers;
+
+namespace DRBDB.Objects
 {
     public class NumericScaler : DataScaler
     {
@@ -12,9 +14,9 @@
             Offset = offset;
         }
 
-        public float ScaleData(int data)
+        public void ScaleData(DataDisplay dataContainer)
         {
-            return data * Slope + Offset;
+            dataContainer.ScaledFloatData = dataContainer.RawIntData * Slope + Offset;
         }
     }
 }

@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Database.cs" />
     <Compile Include="Enums\Protocol.cs" />
+    <Compile Include="Helpers\DataDisplay.cs" />
     <Compile Include="Objects\BinaryDataFormatter.cs" />
     <Compile Include="Objects\DataAcquisitionMethod.cs" />
     <Compile Include="Objects\DataFormatter.cs" />

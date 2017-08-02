@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DRBDB.Helpers;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DRBDB.Objects
@@ -15,12 +16,11 @@ namespace DRBDB.Objects
             StateIDs = new List<KeyValuePair<uint, uint>>();
         }
 
-        public string FormatData(float inputData, bool isMetric)
+        public string FormatData(DataDisplay container, bool isMetric)
         {
-            int convData = (int)inputData;
             foreach (KeyValuePair<uint, ResourceItem> state in States)
             {
-                if(convData == state.Key)
+                if(container.ScaledIntData == state.Key)
                 {
                     if (state.Value == null) return "(BARF)";
                     else return state.Value.ResourceString;

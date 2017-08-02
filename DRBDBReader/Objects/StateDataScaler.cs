@@ -1,4 +1,5 @@
 ﻿using DRBDB.Converters;
+using DRBDB.Helpers;
 using System;
 
 namespace DRBDB.Objects
@@ -40,9 +41,9 @@ namespace DRBDB.Objects
             }
         }
 
-        public float ScaleData(int data)
+        public void ScaleData(DataDisplay container)
         {
-            return EvaluateMask(data) ? 1 : 0;
+            container.ScaledIntData = EvaluateMask(container.RawIntData) ? 1 : 0;
         }
     }
 }

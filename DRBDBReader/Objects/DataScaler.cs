@@ -1,7 +1,9 @@
-﻿namespace DRBDB.Objects
+﻿using DRBDB.Helpers;
+
+namespace DRBDB.Objects
 {
     public interface DataScaler
     {
-        float ScaleData(int data);
+        void ScaleData(DataDisplay dataContainer);
     }
 }

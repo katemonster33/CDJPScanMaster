@@ -94,15 +94,10 @@ namespace CDJPScanMaster
                     if (response.Count == tx.DataAcquisitionMethod.ResponseLen)
                     {
                         byte[] dataBytes = tx.DataAcquisitionMethod.ExtractData(response.ToArray());
-                        int data = 0;
-                        for (int j = 0, shift = 0; j < dataBytes.Length; j++, shift += 8)
-                        {
-                            data |= dataBytes[j] << shift;
-                        }
-                        float dataFlt = (tx.DataScaler != null ? tx.DataScaler.ScaleData(data) : data);
-                        string dataStr = (tx.DataFormatter != null ? tx.DataFormatter.FormatData(dataFlt, true) : dataFlt.ToString());
+                        tx.DataDisplay.RawData = dataBytes;
                         int tmpIndex = i;
-                        lstDataMenuTXs.BeginInvoke((Action)(() => lstDataMenuTXs.Items[tmpIndex].SubItems[1].Text = dataStr));
+                        string data = tx.DataDisplay.FormattedData;
+                        lstDataMenuTXs.BeginInvoke((Action)(() => lstDataMenuTXs.Items[tmpIndex].SubItems[1].Text = data));
                     }
                 }
             }
@@ -1387,20 +1382,6 @@ namespace CDJPScanMaster
                 }
             }
             return new List<byte>();
-        }
-
-        char fromHex(byte nibble)
-        {
-            if (nibble >= 0 && nibble <= 9)
-            {
-                return (char)('0' + nibble);
-            }
-            else if (nibble >= 0xA && nibble <= 0xF)
-            {
-                return (char)('A' + (nibble - 0xA));
-            }
-            else throw new Exception();
-
         }
 
         //private string AutodetectArduinoPort()

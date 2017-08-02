@@ -1,7 +1,9 @@
-﻿namespace DRBDB.Objects
+﻿using DRBDB.Helpers;
+
+namespace DRBDB.Objects
 {
     public interface DataFormatter
     {
-        string FormatData(float inputData, bool isMetric);
+        string FormatData(DataDisplay container, bool isMetric);
     }
 }

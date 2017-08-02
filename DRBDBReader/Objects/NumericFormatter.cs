@@ -1,4 +1,6 @@
-﻿namespace DRBDB.Objects
+﻿using DRBDB.Helpers;
+
+namespace DRBDB.Objects
 {
     public class NumericFormatter : DataFormatter
     {
@@ -35,8 +37,9 @@
             }
         }
 
-        public string FormatData(float inputData, bool isMetric)
+        public string FormatData(DataDisplay container, bool isMetric)
         {
+            float inputData = (container.ScaledFloatData != null ? container.ScaledFloatData.Value : container.ScaledIntData);
             if (isMetric) inputData = inputData * MetricConversionSlope + MetricConversionOffset;
             string formatted = inputData.ToString();
             if (isMetric)

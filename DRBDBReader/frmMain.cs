@@ -31,13 +31,11 @@ namespace DRBDB
 		FileInfo fi = new FileInfo( "database.mem" );
 		Database db;
 		List<string> cmdHistory = new List<string>();
-		int cmdIdx = 0;
 
 		public frmMain()
 		{
 			InitializeComponent();
 			this.cmdHistory.Add( "" );
-			this.cmdIdx = 0;
 		}
 
 		void checkDB()
@@ -135,14 +133,14 @@ namespace DRBDB
                 SetDataGridColumns("ID", "XMIT", "Name", "Scaler");
                 foreach(TXItem item in db.GetTXItems())
                 {
-                    string scaling = item.ConversionScalingType.ToString() + " | " + item.ConversionScalingID + " | ";
-                    if(item.DataScaler == null)
+                    string scaling = item.DataDisplay.ConversionScalingType.ToString() + " | " + item.DataDisplay.ConversionScalingID + " | ";
+                    if(item.DataDisplay.DataScaler == null)
                     {
                         scaling += "(NULL)";
                     }
                     else
                     {
-                        scaling += item.DataScaler.GetType().Name;
+                        scaling += item.DataDisplay.DataScaler.GetType().Name;
                     }
                     dgvIdk.Rows.Add(item.ID, BitConverter.ToString(item.TransmitBytes), item.Name.ResourceString, scaling);
                 }

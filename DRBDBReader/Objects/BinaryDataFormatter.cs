@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DRBDB.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -39,10 +40,10 @@ namespace DRBDB.Objects
             }
         }
 
-        public string FormatData(float inputData, bool isMetric)
+        public string FormatData(DataDisplay container, bool isMetric)
         {
             if (FalseString == null || TrueString == null) return "(BARF)";
-            return (inputData != 0 ? TrueString.ResourceString : FalseString.ResourceString);
+            return (container.ScaledIntData != 0 ? TrueString.ResourceString : FalseString.ResourceString);
         }
     }
 }
