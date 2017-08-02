@@ -25,6 +25,7 @@ namespace CDJPScanMaster
         ManualResetEvent responseReceived = new ManualResetEvent(false);
         List<byte> response = new List<byte>();
         Database drbdb = new Database();
+        System.Windows.Forms.Timer listBoxUpdater = new System.Windows.Forms.Timer();
         public Form1()
         {
             InitializeComponent();
@@ -39,6 +40,23 @@ namespace CDJPScanMaster
             arduino.Open();
             readTask = new Task(ReadThread);
             readTask.Start();
+            listBoxUpdater.Interval = 100;
+            listBoxUpdater.Tick += ListBoxUpdater_Tick;
+        }
+
+        void ListBoxUpdater_Tick(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in lstDataMenuTXs.Items)
+            {
+                if (item.Tag != null && item.Tag.GetType() == typeof(TXItem))
+                {
+                    TXItem txitem = (TXItem)item.Tag;
+                    if (txitem.DataDisplay.IsRawDataUpdated)
+                    {
+                        item.SubItems[1].Text = txitem.DataDisplay.FormattedData;
+                    }
+                }
+            }
         }
 
         void ReadThread()
@@ -66,6 +84,7 @@ namespace CDJPScanMaster
         List<TXItem> visibleTxItems = new List<TXItem>();
         void QueryThread()
         {
+            listBoxUpdater.Enabled = true;
             queryTaskStopSignal.Reset();
             bool isHighSpeedSciMode = false;
             while (!queryTaskStopSignal.WaitOne(1))
@@ -99,11 +118,11 @@ namespace CDJPScanMaster
                         if (tx.DataDisplay.IsRawDataUpdated)
                         {
                             string data = tx.DataDisplay.FormattedData;
-                            lstDataMenuTXs.BeginInvoke((Action)(() => lstDataMenuTXs.Items[tmpIndex].SubItems[1].Text = data));
                         }
                     }
                 }
             }
+            listBoxUpdater.Enabled = false;
         }
 
         void ConnectChannel(ArduinoCommChannel channel)
@@ -1430,6 +1449,7 @@ namespace CDJPScanMaster
                 queryTask.Dispose();
                 queryTask = null;
             }
+            listBoxUpdater.Enabled = false;
         }
 
         private void lstDataMenus_SelectedIndexChanged(object sender, EventArgs e)
@@ -1454,8 +1474,8 @@ namespace CDJPScanMaster
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            //StopQuerying();
-            //lstDataMenuTXs.Items.Clear();
+            StopQuerying();
+            lstDataMenuTXs.Items.Clear();
         }
     }
 
