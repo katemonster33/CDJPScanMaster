@@ -63,7 +63,6 @@ namespace DRBDB.Helpers
         }
         
         byte[] rawData = null;
-        bool rawDataUpdated = false;
         public byte[] RawData
         {
             get
@@ -74,11 +73,11 @@ namespace DRBDB.Helpers
             {
                 if(value != null)
                 {
-                    rawDataUpdated = false;
+                    isRawDataUpdated = false;
                     if (rawData == null || rawData.Length != value.Length)
                     {
                         rawData = value;
-                        rawDataUpdated = true;
+                        isRawDataUpdated = true;
                         RawDataUpdated?.Invoke(this, EventArgs.Empty);
                     }
                     else
@@ -87,17 +86,26 @@ namespace DRBDB.Helpers
                         {
                             if (rawData[i] != value[i])
                             {
-                                rawDataUpdated = true;
+                                isRawDataUpdated = true;
                                 break;
                             }
                         }
-                        if (rawDataUpdated)
+                        if (isRawDataUpdated)
                         {
                             rawData = value;
                             RawDataUpdated?.Invoke(this, EventArgs.Empty);
                         }
                     }
                 }
+            }
+        }
+
+        bool isRawDataUpdated = false;
+        public bool IsRawDataUpdated
+        {
+            get
+            {
+                return isRawDataUpdated;
             }
         }
 
@@ -150,9 +158,10 @@ namespace DRBDB.Helpers
         {
             get
             {
-                if(rawDataUpdated)
+                if(isRawDataUpdated)
                 {
-
+                    formattedData = scaleAndFormatData();
+                    isRawDataUpdated = false;
                 }
                 return formattedData;
             }

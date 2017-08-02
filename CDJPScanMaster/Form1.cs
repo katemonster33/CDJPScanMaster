@@ -96,8 +96,11 @@ namespace CDJPScanMaster
                         byte[] dataBytes = tx.DataAcquisitionMethod.ExtractData(response.ToArray());
                         tx.DataDisplay.RawData = dataBytes;
                         int tmpIndex = i;
-                        string data = tx.DataDisplay.FormattedData;
-                        lstDataMenuTXs.BeginInvoke((Action)(() => lstDataMenuTXs.Items[tmpIndex].SubItems[1].Text = data));
+                        if (tx.DataDisplay.IsRawDataUpdated)
+                        {
+                            string data = tx.DataDisplay.FormattedData;
+                            lstDataMenuTXs.BeginInvoke((Action)(() => lstDataMenuTXs.Items[tmpIndex].SubItems[1].Text = data));
+                        }
                     }
                 }
             }
