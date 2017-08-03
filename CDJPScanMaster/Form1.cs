@@ -23,6 +23,7 @@ namespace CDJPScanMaster
         Module selectedModule = null;
         Database drbdb = new Database();
         System.Windows.Forms.Timer listBoxUpdater = new System.Windows.Forms.Timer();
+        TextBoxLogger serialLogger;
         public Form1()
         {
             InitializeComponent();
