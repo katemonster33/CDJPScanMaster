@@ -11,6 +11,7 @@ using System.Linq;
 using System.Management;
 using System.Threading.Tasks;
 using System.IO;
+using System.Diagnostics;
 
 namespace CDJPScanMaster
 {
@@ -30,9 +31,11 @@ namespace CDJPScanMaster
                 listBox1.Items.Add(type);
             }
             listBox1.Tag = drbdb.GetModuleTypes();
-            arduino = ArduinoCommHandler.CreateCommHandler("COM16");
+            cmbComPorts.Items.AddRange(SerialPort.GetPortNames());
             listBoxUpdater.Interval = 100;
             listBoxUpdater.Tick += ListBoxUpdater_Tick;
+            listBoxUpdater.Enabled = true;
+            serialLogger = new TextBoxLogger(txtSerialLog);
         }
 
         void ListBoxUpdater_Tick(object sender, EventArgs e)
@@ -52,7 +55,7 @@ namespace CDJPScanMaster
         List<TXItem> visibleTxItems = new List<TXItem>();
         void QueryThread()
         {
-            listBoxUpdater.Enabled = true;
+            //listBoxUpdater.Enabled = true;
             queryTaskStopSignal.Reset();
             bool isHighSpeedSciMode = false;
             while (!queryTaskStopSignal.WaitOne(1))
@@ -65,13 +68,14 @@ namespace CDJPScanMaster
                     {
                         if (!isHighSpeedSciMode && tx.TransmitBytes[0] >= 0xF0)
                         {
-                            arduino.SendMessageAndGetResponse(0x12);
-                            isHighSpeedSciMode = true;
+                            isHighSpeedSciMode = arduino.SendMessageAndGetResponse(0x12).Count == 1;
+                            Debug.Assert(isHighSpeedSciMode);
+                            Thread.Sleep(50);
                         }
                         if (isHighSpeedSciMode && tx.TransmitBytes[0] < 0xF0)
                         {
                             arduino.SendMessageAndGetResponse(0xFE);
-                            Thread.Sleep(165);
+                            Thread.Sleep(250);
                             isHighSpeedSciMode = false;
                         }
                     }
@@ -82,15 +86,10 @@ namespace CDJPScanMaster
                     {
                         byte[] dataBytes = tx.DataAcquisitionMethod.ExtractData(response.ToArray());
                         tx.DataDisplay.RawData = dataBytes;
-                        int tmpIndex = i;
-                        if (tx.DataDisplay.IsRawDataUpdated)
-                        {
-                            string data = tx.DataDisplay.FormattedData;
-                        }
                     }
                 }
             }
-            listBoxUpdater.Enabled = false;
+            //listBoxUpdater.Enabled = false;
         }
 
         void ConnectModuleType(ModuleType moduleToConnect)
@@ -1295,7 +1294,7 @@ namespace CDJPScanMaster
                 queryTask.Dispose();
                 queryTask = null;
             }
-            listBoxUpdater.Enabled = false;
+            //listBoxUpdater.Enabled = false;
         }
 
         private void lstDataMenus_SelectedIndexChanged(object sender, EventArgs e)
@@ -1310,7 +1309,7 @@ namespace CDJPScanMaster
                 foreach (TXItem tx in visibleTxItems)
                 {
                     ListViewItem newItem = new ListViewItem(tx.Name.ResourceString) { Tag = tx };
-                    newItem.SubItems.Add(string.Empty);
+                    newItem.SubItems.Add(tx.DataDisplay.FormattedData);
                     lstDataMenuTXs.Items.Add(newItem);
                 }
             });
@@ -1322,6 +1321,46 @@ namespace CDJPScanMaster
         {
             StopQuerying();
             lstDataMenuTXs.Items.Clear();
+        }
+
+        private void btnConnectComPort_Click(object sender, EventArgs e)
+        {
+            string comPort = (string)cmbComPorts.SelectedItem;
+            Task.Run(() => ConnectThread(comPort));
+        }
+        
+        void ConnectThread(string comPort)
+        {
+            progressBar1.InvokeIfRequired(() =>
+            {
+                progressBar1.Enabled = true;
+                progressBar1.Visible = true;
+            });
+            bool connected = false;
+            lblProgress.InvokeIfRequired(() => lblProgress.Text = "Connecting...");
+            arduino = ArduinoCommHandler.CreateCommHandler(comPort, serialLogger);
+            if(arduino == null)
+            {
+                lblProgress.InvokeIfRequired(() => lblProgress.Text = "Failed to open COM port.");
+            }
+            else
+            {
+                connected = arduino.EstablishComms();
+                if(!connected)
+                {
+                    lblProgress.InvokeIfRequired(() => lblProgress.Text = "Timed out waiting for arduino to come online.");
+                    arduino.Dispose();
+                }
+            }
+            progressBar1.InvokeIfRequired(() =>
+            {
+                progressBar1.Enabled = false;
+                progressBar1.Visible = false;
+            });
+            if(connected)
+            {
+                pnlScanMenu.InvokeIfRequired(() => pnlScanMenu.Visible = false);
+            }
         }
     }
 

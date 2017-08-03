@@ -18,12 +18,25 @@ namespace CDJPScanMaster
         SerialPort arduino;
         Task readTask;
         ManualResetEvent responseReceived = new ManualResetEvent(false);
-        private ArduinoCommHandler(SerialPort arduino)
+        TextBoxLogger serialLogger;
+        private ArduinoCommHandler(SerialPort arduino, TextBoxLogger serialLogger)
         {
             ResponseBuffer = new List<byte>();
             this.arduino = arduino;
             readTask = new Task(ReadThread);
             readTask.Start();
+            Connected = false;
+            this.serialLogger = serialLogger;
+        }
+
+        public bool EstablishComms()
+        {
+            if(!Connected)
+            {
+                responseReceived.Reset();
+                responseReceived.WaitOne(2000);
+            }
+            return Connected;
         }
 
         public void Dispose()
@@ -63,13 +76,12 @@ namespace CDJPScanMaster
             {
                 messageAscii += string.Format("{0:X2}", message[i]);
             }
-            messageAscii += '\n';
             responseReceived.Reset();
             ResponseBuffer.Clear();
             for (int retry = 0; retry < 3; retry++)
             {
-                arduino.Write(messageAscii);
-                //txtSerialLog.BeginInvoke((Action)(() => txtSerialLog.AppendText("(TX) " + messageAscii)));
+                arduino.Write(messageAscii + '\n');
+                serialLogger.WriteLine("(TX) " + messageAscii);
                 if (responseReceived.WaitOne(500))
                 {
                     return new List<byte>(ResponseBuffer);
@@ -101,7 +113,7 @@ namespace CDJPScanMaster
 
         void ProcessMessage(string message)
         {
-            //txtSerialLog.BeginInvoke((Action)(() => txtSerialLog.AppendText("(RX) " + message + '\n')));
+            serialLogger.WriteLine("(RX) " + message);
             if (message == "OKGO")
             {
                 Connected = true;
@@ -145,7 +157,7 @@ namespace CDJPScanMaster
             string channelCommand = string.Format("{0:d}\n", (int)channel);
             arduino.Write(channelCommand);
             responseReceived.Reset();
-            //txtSerialLog.InvokeIfRequired(() => txtSerialLog.AppendText("(TX) " + channelCommand));
+            serialLogger.WriteLine("(TX) " + channelCommand.TrimEnd('\n'));
             responseReceived.WaitOne(1000);
             switch(channel)
             {
@@ -165,7 +177,7 @@ namespace CDJPScanMaster
             }
         }
 
-        public static ArduinoCommHandler CreateCommHandler(string portName)
+        public static ArduinoCommHandler CreateCommHandler(string portName, TextBoxLogger serialLogger)
         {
             SerialPort serial = new SerialPort(portName, 115200, Parity.None, 8, StopBits.One);
             serial.DtrEnable = true;
@@ -178,7 +190,7 @@ namespace CDJPScanMaster
             {
                 return null;
             }
-            return new ArduinoCommHandler(serial);
+            return new ArduinoCommHandler(serial, serialLogger);
         }
         
         void ReadThread()

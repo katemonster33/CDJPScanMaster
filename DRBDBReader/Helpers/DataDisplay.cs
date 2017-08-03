@@ -73,7 +73,6 @@ namespace DRBDB.Helpers
             {
                 if(value != null)
                 {
-                    isRawDataUpdated = false;
                     if (rawData == null || rawData.Length != value.Length)
                     {
                         rawData = value;

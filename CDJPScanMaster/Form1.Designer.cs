@@ -18,7 +18,11 @@
                 components.Dispose();
             }
             StopQuerying();
-            arduino.Dispose();
+            serialLogger.Dispose();
+            if (arduino != null)
+            {
+                arduino.Dispose();
+            }
             listBoxUpdater.Dispose();
             base.Dispose(disposing);
         }
@@ -48,12 +52,19 @@
             this.lstActuatorTXs = new System.Windows.Forms.ListView();
             this.lstActuators = new System.Windows.Forms.ListView();
             this.tabLog = new System.Windows.Forms.TabPage();
+            this.pnlScanMenu = new System.Windows.Forms.Panel();
+            this.cmbComPorts = new System.Windows.Forms.ComboBox();
+            this.btnConnectComPort = new System.Windows.Forms.Button();
+            this.lblComPort = new System.Windows.Forms.Label();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.lblProgress = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabModules.SuspendLayout();
             this.tabDataLists.SuspendLayout();
             this.tabSystemTests.SuspendLayout();
             this.tabActuators.SuspendLayout();
             this.tabLog.SuspendLayout();
+            this.pnlScanMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // listBox1
@@ -228,11 +239,71 @@
             this.tabLog.Text = "Serial Log";
             this.tabLog.UseVisualStyleBackColor = true;
             // 
+            // pnlScanMenu
+            // 
+            this.pnlScanMenu.Controls.Add(this.lblProgress);
+            this.pnlScanMenu.Controls.Add(this.progressBar1);
+            this.pnlScanMenu.Controls.Add(this.lblComPort);
+            this.pnlScanMenu.Controls.Add(this.btnConnectComPort);
+            this.pnlScanMenu.Controls.Add(this.cmbComPorts);
+            this.pnlScanMenu.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnlScanMenu.Location = new System.Drawing.Point(0, 0);
+            this.pnlScanMenu.Name = "pnlScanMenu";
+            this.pnlScanMenu.Size = new System.Drawing.Size(583, 389);
+            this.pnlScanMenu.TabIndex = 1;
+            // 
+            // cmbComPorts
+            // 
+            this.cmbComPorts.FormattingEnabled = true;
+            this.cmbComPorts.Location = new System.Drawing.Point(187, 148);
+            this.cmbComPorts.Name = "cmbComPorts";
+            this.cmbComPorts.Size = new System.Drawing.Size(121, 21);
+            this.cmbComPorts.TabIndex = 0;
+            // 
+            // btnConnectComPort
+            // 
+            this.btnConnectComPort.Location = new System.Drawing.Point(314, 146);
+            this.btnConnectComPort.Name = "btnConnectComPort";
+            this.btnConnectComPort.Size = new System.Drawing.Size(75, 23);
+            this.btnConnectComPort.TabIndex = 1;
+            this.btnConnectComPort.Text = "Connect";
+            this.btnConnectComPort.UseVisualStyleBackColor = true;
+            this.btnConnectComPort.Click += new System.EventHandler(this.btnConnectComPort_Click);
+            // 
+            // lblComPort
+            // 
+            this.lblComPort.AutoSize = true;
+            this.lblComPort.Location = new System.Drawing.Point(125, 151);
+            this.lblComPort.Name = "lblComPort";
+            this.lblComPort.Size = new System.Drawing.Size(56, 13);
+            this.lblComPort.TabIndex = 2;
+            this.lblComPort.Text = "COM Port:";
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Enabled = false;
+            this.progressBar1.Location = new System.Drawing.Point(128, 202);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(155, 23);
+            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.progressBar1.TabIndex = 3;
+            this.progressBar1.Visible = false;
+            // 
+            // lblProgress
+            // 
+            this.lblProgress.Location = new System.Drawing.Point(289, 202);
+            this.lblProgress.Name = "lblProgress";
+            this.lblProgress.Size = new System.Drawing.Size(100, 23);
+            this.lblProgress.TabIndex = 4;
+            this.lblProgress.Text = "Select a COM Port.";
+            this.lblProgress.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(583, 389);
+            this.Controls.Add(this.pnlScanMenu);
             this.Controls.Add(this.tabControl1);
             this.Name = "Form1";
             this.ShowIcon = false;
@@ -244,6 +315,8 @@
             this.tabActuators.ResumeLayout(false);
             this.tabLog.ResumeLayout(false);
             this.tabLog.PerformLayout();
+            this.pnlScanMenu.ResumeLayout(false);
+            this.pnlScanMenu.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -267,6 +340,12 @@
         private System.Windows.Forms.ListView lstDataMenuTXs;
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
+        private System.Windows.Forms.Panel pnlScanMenu;
+        private System.Windows.Forms.Label lblComPort;
+        private System.Windows.Forms.Button btnConnectComPort;
+        private System.Windows.Forms.ComboBox cmbComPorts;
+        private System.Windows.Forms.Label lblProgress;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 
