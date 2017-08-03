@@ -90,6 +90,11 @@ namespace CDJPScanMaster
                     }
                 }
             }
+            if (isHighSpeedSciMode)
+            {
+                arduino.SendMessageAndGetResponse(0xFE);
+                Thread.Sleep(250);
+            }
             //listBoxUpdater.Enabled = false;
         }
 
@@ -106,7 +111,7 @@ namespace CDJPScanMaster
                         arduino.ConnectChannel(ArduinoCommChannel.SCI_B_Engine);
                         if (!GetEngineConfigSCI(ref engineSize, ref year, ref bodyStyle, ref ecmType))
                         {
-                            MessageBox.Show("Failed to identify engine over SCI, A configuration or B configuration.");
+                            MessageBox.Show("Failed to identify engine over SCI A or SCI B configuration.");
                             return;
                         }
                     }
