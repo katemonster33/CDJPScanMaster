@@ -1,0 +1,167 @@
+<StaticConverters>
+	<Enumeration Name="BodyStyle_SBECIII_JTEC">
+		<EnumItem Value="1" Name="YJ"/>
+		<EnumItem Value="2" Name="XJ"/>
+		<EnumItem Value="3" Name="ZJ"/>
+		<EnumItem Value="4" Name="FJ"/>
+		<EnumItem Value="5" Name="PL"/>
+		<EnumItem Value="6" Name="JA"/>
+		<EnumItem Value="7" Name="AA"/>
+		<EnumItem Value="8" Name="AC"/>
+		<EnumItem Value="9" Name="AS"/>
+		<EnumItem Value="10" Name="LH"/>
+		<EnumItem Value="11" Name="NS"/>
+		<EnumItem Value="12" Name="AB"/>
+		<EnumItem Value="13" Name="AN"/>
+		<EnumItem Value="14" Name="BR"/>
+		<EnumItem Value="15" Name="SR"/>
+		<EnumItem Value="16" Name="AN"/>
+		<EnumItem Value="17" Name="AN"/>
+		<EnumItem Value="18" Name="JX"/>
+		<EnumItem Value="19" Name="PR"/>
+		<EnumItem Value="20" Name="TJ"/>
+		<EnumItem Value="21" Name="DN"/>
+		<EnumItem Value="22" Name="WJ"/>
+		<EnumItem Value="23" Name="SJ"/>
+		<EnumItem Value="24" Name="JR"/>
+		<EnumItem Value="25" Name="PT"/>
+		<EnumItem Value="26" Name="RS"/>
+		<EnumItem Value="27" Name="KJ"/>
+		<EnumItem Value="28" Name="DR"/>
+		<EnumItem Value="29" Name="AN84"/>
+		<EnumItem Value="30" Name="ZB"/>
+	</Enumeration>
+	<Enumeration Name="EngineSize_SBECIII_JTEC">
+		<EnumItem Value="1" Name="2.2L I4"/>
+		<EnumItem Value="2" Name="2.5L I4"/>
+		<EnumItem Value="3" Name="3.0L V6"/>
+		<EnumItem Value="4" Name="3.3L V6"/>
+		<EnumItem Value="5" Name="3.9L V6"/>
+		<EnumItem Value="6" Name="5.2L V8"/>
+		<EnumItem Value="7" Name="5.9L V8"/>
+		<EnumItem Value="8" Name="3.8L V6"/>
+		<EnumItem Value="9" Name="4.0L I6"/>
+		<EnumItem Value="10" Name="2.0L I4 SOHC"/>
+		<EnumItem Value="11" Name="3.5L V6"/>
+		<EnumItem Value="12" Name="8.0L V10"/>
+		<EnumItem Value="13" Name="2.4L I4"/>
+		<EnumItem Value="14" Name="2.5L I4"/>
+		<EnumItem Value="15" Name="2.5L V6"/>
+		<EnumItem Value="16" Name="2.0L I4 DOHC"/>
+		<EnumItem Value="17" Name="2.5L V6"/>
+		<EnumItem Value="18" Name="5.9L I6"/>
+		<EnumItem Value="19" Name="3.3L V6"/>
+		<EnumItem Value="20" Name="2.7L V6"/>
+		<EnumItem Value="21" Name="3.2L V6"/>
+		<EnumItem Value="22" Name="1.8L I4"/>
+		<EnumItem Value="23" Name="3.7L V6"/>
+		<EnumItem Value="24" Name="4.7L V8"/>
+		<EnumItem Value="25" Name="1.9L I4"/>
+		<EnumItem Value="26" Name="3.1L I5"/>
+		<EnumItem Value="27" Name="1.6L I4"/>
+		<EnumItem Value="28" Name="2.7L V6"/>
+		<EnumItem Value="29" Name="5.7L V8"/>
+		<EnumItem Value="30" Name="8.3L V10"/>
+		<EnumItem Value="31" Name="2.7L I5"/>
+		<EnumItem Value="32" Name="2.8L I4"/>
+	</Enumeration>
+	<Enumeration Name="EngineControllerType_SBECIII_JTEC">
+		<EnumItem Value="1" Name="FCC"/>
+		<EnumItem Value="2" Name="SBEC/SBECII"/>
+		<EnumItem Value="3" Name="SBEC/SBECII"/>
+		<EnumItem Value="4" Name="SBEC/SBECII"/>
+		<EnumItem Value="5" Name="SBECIII"/>
+		<EnumItem Value="6" Name="JTEC"/>
+		<EnumItem Value="13" Name="JTEC"/>
+		<EnumItem Value="20" Name="JTEC"/>
+		<EnumItem Value="7" Name="SBECIIIA"/>
+		<EnumItem Value="8" Name="SBECIII+"/>
+		<EnumItem Value="9" Name="CM551"/>
+		<EnumItem Value="10" Name="Bosch"/>
+		<EnumItem Value="15" Name="Bosch"/>
+		<EnumItem Value="16" Name="Bosch"/>
+		<EnumItem Value="25" Name="Bosch"/>
+		<EnumItem Value="11" Name="Northrop"/>
+		<EnumItem Value="12" Name="JTEC+"/>
+		<EnumItem Value="14" Name="JTEC+"/>
+		<EnumItem Value="17" Name="Siemens"/>
+		<EnumItem Value="18" Name="SBECIIIA+"/>
+		<EnumItem Value="19" Name="SBECIIIB"/>
+		<EnumItem Value="21" Name="CM845"/>
+		<EnumItem Value="22" Name="CM846"/>
+		<EnumItem Value="23" Name="Cummins"/>
+		<EnumItem Value="24" Name="CM848"/>
+	</Enumeration>
+	<Enumeration Name="BodyStyle_SBECII">
+		<EnumItem Bit="0" Name="YJ"/>
+		<EnumItem Bit="1" Name="XJ"/>
+		<EnumItem Bit="2" Name="ZJ"/>
+		<EnumItem Bit="9" Name="FJ"/>
+		<EnumItem Bit="10" Name="PL"/>
+		<EnumItem Bit="11" Name="JA"/>
+		<EnumItem Bit="12" Name="AA"/>
+		<EnumItem Bit="13" Name="AC"/>
+		<EnumItem Bit="14" Name="AS"/>
+		<EnumItem Bit="15" Name="LH"/>
+		<EnumItem Bit="16" Name="AB"/>
+		<EnumItem Bit="17" Name="AN"/>
+		<EnumItem Bit="18" Name="BR"/>
+		<EnumItem Bit="19" Name="SR"/>
+	</Enumeration>
+	<Enumeration Name="EngineSize_SBECII">
+		<EnumItem Value="0" Name="2.2L I4"/>
+		<EnumItem Value="1" Name="2.5L I4"/>
+		<EnumItem Value="2" Name="3.0L V6"/>
+		<EnumItem Value="3" Name="3.3L V6"/>
+		<EnumItem Value="4" Name="3.9L V6"/>
+		<EnumItem Value="5" Name="5.2L V8"/>
+		<EnumItem Value="6" Name="5.9L"/>
+		<EnumItem Value="7" Name="3.8L V8"/>
+		<EnumItem Value="8" Name="4.0L I6"/>
+		<EnumItem Value="9" Name="2.0L I4 SOHC"/>
+		<EnumItem Value="10" Name="3.5L V6"/>
+		<EnumItem Value="11" Name="8.0L V10"/>
+		<EnumItem Value="12" Name="2.4L I4"/>
+		<EnumItem Value="13" Name="2.0L I4 DOHC"/>
+	</Enumeration>
+	<Enumeration Name="BodyStyle_BCM_CCD">
+		<EnumItem Value="1" Name="NS"/>
+		<EnumItem Value="2" Name="S Diesel"/>
+		<EnumItem Value="3" Name="GS"/>
+		<EnumItem Value="4" Name="YJ"/>
+		<EnumItem Value="5" Name="ZJ"/>
+		<EnumItem Value="6" Name="T300"/>
+		<EnumItem Value="7" Name="XJ"/>
+		<EnumItem Value="8" Name="AN"/>
+		<EnumItem Value="9" Name="LH"/>
+		<EnumItem Value="10" Name="JA"/>
+		<EnumItem Value="11" Name="LX"/>
+		<EnumItem Value="12" Name="JX"/>
+	</Enumeration>
+	<Enumeration Name="BodyStyle_BCM_PCI">
+		<EnumItem Value="1" Name="RS"/>
+		<EnumItem Value="3" Name="RG"/>
+		<EnumItem Value="4" Name="TJ"/>
+		<EnumItem Value="5" Name="ZJ"/>
+		<EnumItem Value="6" Name="DR"/>
+		<EnumItem Value="7" Name="KJ"/>
+		<EnumItem Value="8" Name="AN"/>
+		<EnumItem Value="9" Name="LH"/>
+		<EnumItem Value="10" Name="JR"/>
+		<EnumItem Value="11" Name="LX"/>
+		<EnumItem Value="12" Name="JX"/>
+		<EnumItem Value="13" Name="WJ"/>
+		<EnumItem Value="14" Name="DN"/>
+		<EnumItem Value="15" Name="ANS4"/>
+		<EnumItem Value="16" Name="PL41"/>
+		<EnumItem Value="17" Name="PL44"/>
+		<EnumItem Value="18" Name="PT"/>
+		<EnumItem Value="19" Name="RS EV"/>
+		<EnumItem Value="21" Name="AB"/>
+	</Enumeration>
+	<Enumeration Name="BodyControllerType">
+		<EnumItem Value="0" Name="Base"/>
+		<EnumItem Value="1" Name="Mid"/>
+		<EnumItem Value="2" Name="Premium"/>
+	</Enumeration>
+</Enumerations>

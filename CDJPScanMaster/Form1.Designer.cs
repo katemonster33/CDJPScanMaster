@@ -17,12 +17,11 @@
             {
                 components.Dispose();
             }
-            StopQuerying();
-            serialLogger.Dispose();
-            if (arduino != null)
+            if(vlm != null)
             {
-                arduino.Dispose();
+                vlm.Dispose();
             }
+            serialLogger.Dispose();
             listBoxUpdater.Dispose();
             base.Dispose(disposing);
         }
