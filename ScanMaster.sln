@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanMaster.Database", "DRBDBReader\ScanMaster.Database.csproj", "{91943950-E302-4BFD-95DD-7AE6CA59C04A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanMaster.UI", "CDJPScanMaster\ScanMaster.UI.csproj", "{1140AA87-062C-4779-BDFB-488E857D563E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScanMaster.Comms", "ScanMaster.Comms\ScanMaster.Comms.csproj", "{66F44172-7F71-4DD3-AD57-6F18EE37DA9B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{91943950-E302-4BFD-95DD-7AE6CA59C04A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91943950-E302-4BFD-95DD-7AE6CA59C04A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91943950-E302-4BFD-95DD-7AE6CA59C04A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91943950-E302-4BFD-95DD-7AE6CA59C04A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1140AA87-062C-4779-BDFB-488E857D563E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1140AA87-062C-4779-BDFB-488E857D563E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1140AA87-062C-4779-BDFB-488E857D563E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1140AA87-062C-4779-BDFB-488E857D563E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66F44172-7F71-4DD3-AD57-6F18EE37DA9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66F44172-7F71-4DD3-AD57-6F18EE37DA9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66F44172-7F71-4DD3-AD57-6F18EE37DA9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66F44172-7F71-4DD3-AD57-6F18EE37DA9B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

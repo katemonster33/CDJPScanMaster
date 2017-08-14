@@ -21,11 +21,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Text;
-using DRBDB.Objects;
+using ScanMaster.Database.Objects;
 
-namespace DRBDB
+namespace ScanMaster.Database
 {
-    public class Database
+    public class DRBDatabase
     {
         FileInfo dbFile;
         public SimpleBinaryReader dbReader;
@@ -49,7 +49,7 @@ namespace DRBDB
 
         public bool isStarScanDB;
 
-        public Database(FileInfo dbFile)
+        public DRBDatabase(FileInfo dbFile)
         {
             this.dbFile = dbFile;
 
@@ -68,7 +68,7 @@ namespace DRBDB
 
             this.makeTables();
         }
-        public Database()
+        public DRBDatabase()
         {
             this.dbFile = new FileInfo("database.mem");
 
@@ -519,8 +519,7 @@ namespace DRBDB
                 float slope = numericScalerTable.ReadFloatField(dbReader.rawDB, readOffset, 1);
                 float offset = numericScalerTable.ReadFloatField(dbReader.rawDB, readOffset, 2);
                 NumericScalers[ID] = new NumericScaler(ID, slope, offset);
-            }
-        }
+            }        }
 
         void ReadDataAcquisitions(Table dataAcquisitionTable)
         {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DRBDB.Enums
+namespace ScanMaster.Database.Enums
 {
     public enum Protocol
     {

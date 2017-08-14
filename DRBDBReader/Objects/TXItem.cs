@@ -1,7 +1,7 @@
-﻿using DRBDB.Helpers;
+﻿using ScanMaster.Database.Helpers;
 using System;
 
-namespace DRBDB.Objects
+namespace ScanMaster.Database.Objects
 {
     public class TXItem : SelectableDataItem
     {
@@ -10,7 +10,7 @@ namespace DRBDB.Objects
         public byte[] TransmitBytes { get; private set; }
         public uint HintID { get; private set; }
         public DataDisplay DataDisplay { get; set; }
-        public TXItem(Database parentDb, uint id, byte[] conversionBytes, uint dataAcquireId, uint moduleMenuId, uint functionId, byte[] xmitBytesRaw, uint nameId, uint hintId, uint moduleTypeId)
+        public TXItem(DRBDatabase parentDb, uint id, byte[] conversionBytes, uint dataAcquireId, uint moduleMenuId, uint functionId, byte[] xmitBytesRaw, uint nameId, uint hintId, uint moduleTypeId)
         {
             database = parentDb;
             ID = id;

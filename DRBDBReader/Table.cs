@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DRBDB
+namespace ScanMaster.Database
 {
     public class Table
     {
@@ -11,9 +11,9 @@ namespace DRBDB
         public ushort rowSize;
         List<byte> colSizes;
         List<ushort> colOffsets = new List<ushort>();
-        public Database db;
+        public DRBDatabase db;
 
-        public Table(Database db, ushort id, uint offset, ushort rowCount, ushort rowSize, List<byte> colSizesLst)
+        public Table(DRBDatabase db, ushort id, uint offset, ushort rowCount, ushort rowSize, List<byte> colSizesLst)
         {
             this.db = db;
             this.id = id;

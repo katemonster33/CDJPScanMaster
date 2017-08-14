@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DRBDB.Objects
+namespace ScanMaster.Database.Objects
 {
     public abstract class SelectableDataItem
     {
-        protected Database database = null;
+        protected DRBDatabase database = null;
         public uint ID { get; protected set; }
         public uint NameID { get; protected set; }
         public uint ModuleTypeID { get; protected set; }

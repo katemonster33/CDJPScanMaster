@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace CDJPScanMaster
+namespace ScanMaster.Comms
 {
     internal class StaticConverters
     {

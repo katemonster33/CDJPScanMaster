@@ -164,4 +164,4 @@
 		<EnumItem Value="1" Name="Mid"/>
 		<EnumItem Value="2" Name="Premium"/>
 	</Enumeration>
-</Enumerations>
+</StaticConverters>

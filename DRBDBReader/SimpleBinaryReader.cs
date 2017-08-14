@@ -18,7 +18,7 @@
 using System;
 using System.IO;
 
-namespace DRBDB
+namespace ScanMaster.Database
 {
 	/// <summary>
 	/// Basic thread-safe in-memory file reader.

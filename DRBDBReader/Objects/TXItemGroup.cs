@@ -1,16 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace DRBDB.Objects
+namespace ScanMaster.Database.Objects
 {
     public class TXItemGroup
     {
-        Database database;
+        DRBDatabase database;
         public uint ID { get; private set; }
         public uint ModuleTypeID { get; private set; }
         public uint Order { get; private set; }
         public List<uint> TXItemIDs { get; internal set; }
-        public TXItemGroup(Database parentDb, uint id, uint moduleTypeId, uint order)
+        public TXItemGroup(DRBDatabase parentDb, uint id, uint moduleTypeId, uint order)
         {
             database = parentDb;
             ID = id;

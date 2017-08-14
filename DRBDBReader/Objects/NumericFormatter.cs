@@ -1,16 +1,16 @@
-﻿using DRBDB.Helpers;
+﻿using ScanMaster.Database.Helpers;
 
-namespace DRBDB.Objects
+namespace ScanMaster.Database.Objects
 {
     public class NumericFormatter : DataFormatter
     {
-        Database database;
+        DRBDatabase database;
         public uint ID { get; private set; }
         public uint EnglishUnitNameID { get; private set; }
         public uint MetricUnitNameID { get; private set; }
         public float MetricConversionSlope { get; private set; }
         public float MetricConversionOffset { get; private set; }
-        public NumericFormatter(Database parentDb, uint id, uint englishUnitNameId, uint metricUnitNameId, float metricConvSlope, float metricConvOffset)
+        public NumericFormatter(DRBDatabase parentDb, uint id, uint englishUnitNameId, uint metricUnitNameId, float metricConvSlope, float metricConvOffset)
         {
             database = parentDb;
             ID = id;

@@ -1,4 +1,4 @@
-﻿namespace DRBDB.Converters
+﻿namespace ScanMaster.Database.Converters
 {
 	public enum StateOperator : byte
 	{

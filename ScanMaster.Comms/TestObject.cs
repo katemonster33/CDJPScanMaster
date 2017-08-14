@@ -1,11 +1,11 @@
-﻿using DRBDB.Objects;
+﻿using ScanMaster.Database.Objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CDJPScanMaster
+namespace ScanMaster.Comms
 {
     public class TestObject
     {

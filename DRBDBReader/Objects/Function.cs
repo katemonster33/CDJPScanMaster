@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace DRBDB.Objects
+namespace ScanMaster.Database.Objects
 {
     public class Function : SelectableDataItem
     {
         public uint Order { get; private set; }
         public List<uint> LinkedFunctionIDs { get; private set; }
-        public Function(Database parentDb, uint id, uint moduleTypeId, uint nameId, uint moduleMenuId, uint order)
+        public Function(DRBDatabase parentDb, uint id, uint moduleTypeId, uint nameId, uint moduleMenuId, uint order)
         {
             database = parentDb;
             ID = id;

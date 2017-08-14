@@ -1,12 +1,12 @@
-﻿namespace DRBDB.Objects
+﻿namespace ScanMaster.Database.Objects
 {
     public class ModuleType
     {
-        Database database;
+        DRBDatabase database;
         public uint ID { get; private set; }
         public uint TypeID { get; private set; }
         public uint NameID { get; private set; }
-        public ModuleType(Database parentDb, uint id, uint typeId, uint nameId)
+        public ModuleType(DRBDatabase parentDb, uint id, uint typeId, uint nameId)
         {
             database = parentDb;
             ID = id;

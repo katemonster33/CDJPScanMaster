@@ -1,11 +1,11 @@
-﻿namespace DRBDB.Objects
+﻿namespace ScanMaster.Database.Objects
 {
     public class ModuleMenuItem
     {
-        Database database;
+        DRBDatabase database;
         public uint ID { get; private set; }
         public uint NameID { get; private set; }
-        public ModuleMenuItem(Database parentDb, uint id, uint nameId)
+        public ModuleMenuItem(DRBDatabase parentDb, uint id, uint nameId)
         {
             database = parentDb;
             ID = id;

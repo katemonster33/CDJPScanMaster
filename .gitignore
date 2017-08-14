@@ -215,3 +215,4 @@ _Pvt_Extensions
 Binary/CDJPScanMaster.exe.config
 Binary/DRBDBReader.exe.config
 Binary/database.mem
+Binary/StaticConverters.xml

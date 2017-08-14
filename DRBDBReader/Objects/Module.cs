@@ -1,18 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace DRBDB.Objects
+namespace ScanMaster.Database.Objects
 {
     public class Module
     {
-        Database database;
+        DRBDatabase database;
         public uint ID { get; private set; }
         public uint ModuleTypeID { get; private set; }
         public uint NameID { get; private set; }
         public List<uint> TXItemIDs { get; internal set; }
         public List<uint> DataMenuItemIDs { get; private set; }
 
-        public Module(Database parentDb, uint id, uint moduleTypeID, uint stringID)
+        public Module(DRBDatabase parentDb, uint id, uint moduleTypeID, uint stringID)
         {
             database = parentDb;
             ID = id;

@@ -1,15 +1,15 @@
-﻿using DRBDB.Objects;
+﻿using ScanMaster.Database.Objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DRBDB.Helpers
+namespace ScanMaster.Database.Helpers
 {
     public class DataDisplay
     {
-        Database database;
+        DRBDatabase database;
         public byte ConversionScalingType { get; private set; }
         public byte ConversionFormatterType { get; private set; }
         public uint ConversionScalingID { get; private set; }
@@ -71,7 +71,7 @@ namespace DRBDB.Helpers
             }
             set
             {
-                if(value != null)
+                if (value != null)
                 {
                     if (rawData == null || rawData.Length != value.Length)
                     {
@@ -167,7 +167,7 @@ namespace DRBDB.Helpers
         }
 
         public event EventHandler RawDataUpdated;
-        public DataDisplay(Database database, byte[] conversionBytes)
+        public DataDisplay(DRBDatabase database, byte[] conversionBytes)
         {
             this.database = database;
             ConversionScalingType = (byte)(conversionBytes[0] & 0x0F);

@@ -1,16 +1,16 @@
 ﻿using System.Collections.Generic;
 
-namespace DRBDB.Objects
+namespace ScanMaster.Database.Objects
 {
     public class MainMenuItem
     {
-        Database database;
+        DRBDatabase database;
         public uint ID { get; private set; }
         public uint ParentID { get; private set; }
         public uint NameID { get; private set; }
         public int Order { get; private set; }
         public int ScreenYPosition { get; private set; }
-        public MainMenuItem(Database parentDb, uint id, uint parentId, uint nameId, int order, int screenYPosition)
+        public MainMenuItem(DRBDatabase parentDb, uint id, uint parentId, uint nameId, int order, int screenYPosition)
         {
             database = parentDb;
             ID = id;

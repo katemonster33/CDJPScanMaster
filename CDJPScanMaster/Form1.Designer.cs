@@ -1,4 +1,4 @@
-﻿namespace CDJPScanMaster
+﻿namespace ScanMaster.UI
 {
     partial class Form1
     {
@@ -21,7 +21,6 @@
             {
                 vlm.Dispose();
             }
-            serialLogger.Dispose();
             listBoxUpdater.Dispose();
             base.Dispose(disposing);
         }

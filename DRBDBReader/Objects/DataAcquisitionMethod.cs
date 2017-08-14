@@ -1,11 +1,11 @@
-﻿using DRBDB.Enums;
+﻿using ScanMaster.Database.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DRBDB.Objects
+namespace ScanMaster.Database.Objects
 {
     public class DataAcquisitionMethod
     {

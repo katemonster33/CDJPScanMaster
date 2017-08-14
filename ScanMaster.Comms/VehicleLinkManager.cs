@@ -1,6 +1,6 @@
-﻿using DRBDB;
-using DRBDB.Enums;
-using DRBDB.Objects;
+﻿using ScanMaster.Database;
+using ScanMaster.Database.Enums;
+using ScanMaster.Database.Objects;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,27 +8,25 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
-namespace CDJPScanMaster
+namespace ScanMaster.Comms
 {
-    internal class VehicleLinkManager : IDisposable
+    public class VehicleLinkManager : IDisposable
     {
         ArduinoCommHandler arduino;
-        TextBoxLogger logger;
         Task queryTask;
         ManualResetEvent queryTaskStopSignal = new ManualResetEvent(false);
-        Database database;
+        Dictionary<string, string> cachedDatas = new Dictionary<string, string>();
+        DRBDatabase database;
         StaticConverters converters = new StaticConverters();
-        internal VehicleLinkManager(TextBoxLogger serialLogger)
+        public VehicleLinkManager()
         {
-            logger = serialLogger;
-            database = new Database();
+            database = new DRBDatabase();
         }
 
-        public bool Open(string serialPort)
+        public bool OpenComms(string serialPort)
         {
-            arduino = ArduinoCommHandler.CreateCommHandler(serialPort, logger);
+            arduino = ArduinoCommHandler.CreateCommHandler(serialPort);
             if (arduino == null) return false;
             if (!arduino.EstablishComms())
             {
@@ -119,62 +117,58 @@ namespace CDJPScanMaster
                         arduino.ConnectChannel(ArduinoCommChannel.SCI_B_Engine);
                         if (!GetEngineConfigSCI(ref engineSize, ref year, ref bodyStyle, ref ecmType))
                         {
-                            MessageBox.Show("Failed to identify engine over SCI A or SCI B configuration.");
-                            return null;
+                            throw new Exception("Failed to identify engine over SCI A or SCI B configuration.");
                         }
                     }
-                    uint engineModuleId = Get_Engine_Table_ID(engineSize, year, bodyStyle, ecmType);
+                    IEnumerable<Module> engineModules = database.GetModules().Where(mod => mod.ModuleTypeID == (uint)ModuleTypeID.Engine);
+                    uint engineModuleId = TableIDUtility.Get_Engine_Table_ID(engineModules, engineSize, year, bodyStyle, ecmType);
                     if (engineModuleId == 0)
                     {
-                        MessageBox.Show("Engine appears to be unsupported.\n" +
+                        throw new Exception("Engine appears to be unsupported.\n" +
                             "Engine size: " + engineSize + "\n" +
                             "Year: " + year + "\n" +
                             "Body Style: " + bodyStyle + "\n" +
                             "ECM Type: " + ecmType);
-                        return null;
                     }
                     return database.GetModule(engineModuleId);
 
                 case ModuleTypeID.Transmission:
-                    return null;
+                    throw new Exception("Not Supported.");
 
                 case ModuleTypeID.Body:
                     GetBodyStyleAndYearFromBCM(out bodyStyle, out year);
                     if (bodyStyle == null || year == null)
                     {
-                        MessageBox.Show("Could not ID body module. Verify your connection.");
-                        return null;
+                        throw new Exception("Could not ID body module. Verify your connection.");
                     }
                     string level = GetBCMModuleLevel_CCD();
                     if (level == null)
                     {
                         level = "Base"; //it's possible the BCM doesn't support this command ID - in that case, it's likely just a base module.
                     }
-                    uint moduleId = Get_Body_Table_ID(year, bodyStyle, level);
+                    uint moduleId = TableIDUtility.Get_Body_Table_ID(year, bodyStyle, level, GetIsTheftModuleCommunicating, GetIsClimateModuleCommunicating);
                     if (moduleId == 0)
                     {
-                        MessageBox.Show("This combination of BCM appears to be unsupported. \n" +
+                        throw new Exception("This combination of BCM appears to be unsupported. \n" +
                             "Year: " + year + "\n" +
                             "Body Style: " + bodyStyle + "\n" +
                             "BCM Style: " + level);
-                        return null;
                     }
                     return database.GetModule(moduleId);
 
                 case ModuleTypeID.Brakes:
-                    return null;
+                    throw new Exception("Not supported");
 
                 case ModuleTypeID.AudioSystems:
                     string radioModel = GetRadioModel();
                     if (string.IsNullOrEmpty(radioModel))
                     {
-                        MessageBox.Show("Failed to identify audio module. Note that this is normal if a factory radio is installed.");
+                        throw new Exception("Failed to identify audio module. Note that this is normal if a factory radio is installed.");
                     }
-                    uint radioTableId = Get_Radio_Table_ID(radioModel);
+                    uint radioTableId = TableIDUtility.Get_Radio_Table_ID(radioModel, arduino.ConnectedProtocol);
                     if (radioTableId == 0)
                     {
-                        MessageBox.Show("Identified radio was not supported: " + radioModel);
-                        return null;
+                        throw new Exception("Identified radio was not supported: " + radioModel);
                     }
                     return database.GetModule(radioTableId);
 
@@ -182,18 +176,16 @@ namespace CDJPScanMaster
                     GetBodyStyleAndYearFromBCM(out bodyStyle, out year);
                     if (bodyStyle == null || year == null)
                     {
-                        MessageBox.Show("Could not ID body module. Verify your connection.");
-                        return null;
+                        throw new Exception("Could not ID body module. Verify your connection.");
                     }
                     bool isImmob = true; // USE THIS FOR DETERMINING COMM LATER
                     uint vtssTableId = TableIDUtility.Get_VTSS_Table_ID(year, bodyStyle, isImmob);
                     if (vtssTableId == 0)
                     {
-                        MessageBox.Show("This theft module appears to be unsupported. \n" +
+                        throw new Exception("This theft module appears to be unsupported. \n" +
                             "Year: " + year + "\n" +
                             "Body Style: " + bodyStyle + "\n" +
                             "Is Immobilizer: " + isImmob.ToString());
-                        return null;
                     }
                     return database.GetModule(vtssTableId);
 
@@ -201,15 +193,13 @@ namespace CDJPScanMaster
                     GetBodyStyleAndYearFromBCM(out bodyStyle, out year);
                     if (bodyStyle == null || year == null)
                     {
-                        MessageBox.Show("Could not ID body module. Verify your connection.");
-                        return null;
+                        throw new Exception("Could not ID body module. Verify your connection.");
                     }
                     uint airTempTableId = TableIDUtility.Get_AirTempControl_Table_ID(bodyStyle);
                     if (airTempTableId == 0)
                     {
-                        MessageBox.Show("This air temp control module appears to be unsupported. \n" +
+                        throw new Exception("This air temp control module appears to be unsupported. \n" +
                             "Body Style: " + bodyStyle);
-                        return null;
                     }
                     return database.GetModule(airTempTableId);
 
@@ -217,13 +207,12 @@ namespace CDJPScanMaster
                     GetBodyStyleAndYearFromBCM(out bodyStyle, out year);
                     if (bodyStyle == null || year == null)
                     {
-                        MessageBox.Show("Could not ID body module. Verify your connection.");
-                        return null;
+                        throw new Exception("Could not ID body module. Verify your connection.");
                     }
                     uint compassMiniTripId = TableIDUtility.Get_CompassMiniTrip_Table_ID(bodyStyle, arduino.ConnectedProtocol);
                     if (compassMiniTripId == 0)
                     {
-                        MessageBox.Show("This compass mini-trip module appears to be unsupported. \n" +
+                        throw new Exception("This compass mini-trip module appears to be unsupported. \n" +
                             "Body Style: " + bodyStyle);
                     }
                     return database.GetModule(compassMiniTripId);
@@ -232,16 +221,14 @@ namespace CDJPScanMaster
                     GetBodyStyleAndYearFromBCM(out bodyStyle, out year);
                     if (bodyStyle == null || year == null)
                     {
-                        MessageBox.Show("Could not ID body module. Verify your connection.");
-                        return null;
+                        throw new Exception("Could not ID body module. Verify your connection.");
                     }
-                    uint memorySeatId = Get_MemorySeat_Table_ID(bodyStyle, year);
+                    uint memorySeatId = TableIDUtility.Get_MemorySeat_Table_ID(bodyStyle, year);
                     if (memorySeatId == 0)
                     {
-                        MessageBox.Show("This compass mini-trip module appears to be unsupported. \n" +
+                        throw new Exception("This compass mini-trip module appears to be unsupported. \n" +
                             "Year: " + year + "\n" +
                             "Body Style: " + bodyStyle);
-                        return null;
                     }
                     return database.GetModule(memorySeatId);
 
@@ -249,16 +236,14 @@ namespace CDJPScanMaster
                     GetBodyStyleAndYearFromBCM(out bodyStyle, out year);
                     if (bodyStyle == null || year == null)
                     {
-                        MessageBox.Show("Could not ID body module. Verify your connection.");
-                        return null;
+                        throw new Exception("Could not ID body module. Verify your connection.");
                     }
                     uint clusterId = TableIDUtility.Get_MIC_Table_ID(bodyStyle, year, arduino.ConnectedProtocol);
                     if (clusterId == 0)
                     {
-                        MessageBox.Show("This instrument cluster module appears to be unsupported. \n" +
+                        throw new Exception("This instrument cluster module appears to be unsupported. \n" +
                             "Year: " + year + "\n" +
                             "Body Style: " + bodyStyle);
-                        return null;
                     }
                     return database.GetModule(clusterId);
 
@@ -266,16 +251,14 @@ namespace CDJPScanMaster
                     GetBodyStyleAndYearFromBCM(out bodyStyle, out year);
                     if (bodyStyle == null || year == null)
                     {
-                        MessageBox.Show("Could not ID body module. Verify your connection.");
-                        return null;
+                        throw new Exception("Could not ID body module. Verify your connection.");
                     }
-                    uint vicId = Get_VehicleInfoCenter_Table_ID(bodyStyle, year);
+                    uint vicId = TableIDUtility.Get_VehicleInfoCenter_Table_ID(bodyStyle, year);
                     if (vicId == 0)
                     {
-                        MessageBox.Show("This vehicle info center module appears to be unsupported. \n" +
+                        throw new Exception("This vehicle info center module appears to be unsupported. \n" +
                             "Year: " + year + "\n" +
                             "Body Style: " + bodyStyle);
-                        return null;
                     }
                     return database.GetModule(vicId);
 
@@ -283,37 +266,18 @@ namespace CDJPScanMaster
                     GetBodyStyleAndYearFromBCM(out bodyStyle, out year);
                     if (bodyStyle == null || year == null)
                     {
-                        MessageBox.Show("Could not ID body module. Verify your connection.");
-                        return null;
+                        throw new Exception("Could not ID body module. Verify your connection.");
                     }
                     uint otisId = TableIDUtility.Get_OTIS_Table_ID(bodyStyle);
                     if (otisId == 0)
                     {
-                        MessageBox.Show("This OTIS module appears to be unsupported. \n" +
+                        throw new Exception("This OTIS module appears to be unsupported. \n" +
                             "Body Style: " + bodyStyle);
-                        return null;
                     }
                     return database.GetModule(otisId);
                 default:
                     return null;
             }
-        }
-
-        uint Get_Engine_Table_ID(string engineSize, string year, string bodyStyle, string ecmType)
-        {
-            Module mostQualifiedModule = null;
-            uint maxQualifiers = 0;
-            foreach (Module mod in database.GetModules().Where(mod => mod.ModuleTypeID == (uint)ModuleTypeID.Engine))
-            {
-                uint tempQualifiers = mod.TestModuleQualifiers(engineSize, year, bodyStyle, ecmType);
-                if (tempQualifiers > maxQualifiers)
-                {
-                    maxQualifiers = tempQualifiers;
-                    mostQualifiedModule = mod;
-                }
-            }
-            if (mostQualifiedModule == null) return 0;
-            return mostQualifiedModule.ID;
         }
 
         bool GetEngineConfigSCI(ref string engineSize, ref string year, ref string bodyStyle, ref string ecuType)
@@ -390,128 +354,6 @@ namespace CDJPScanMaster
             }
         }
 
-        uint Get_Radio_Table_ID(string radioModel)
-        {
-            switch (radioModel)
-            {
-                case "RBC":
-                case "RBR":
-                    return 4032;
-                case "RAD":
-                    return 4033;
-                case "RAZ":
-                    if (arduino.ConnectedProtocol == Protocol.J1850) return 4035;
-                    else return 4034;
-                case "RBN":
-                    if (arduino.ConnectedProtocol == Protocol.J1850) return 4037;
-                    else return 4036;
-                case "RBL":
-                    return 4038;
-                case "RBJ":
-                    return 4039;
-                //case "RBR":
-                //    return 4038;
-                case "RBA":
-                    return 4041;
-                case "RBT":
-                    return 4042;
-                case "RBY":
-                    return 4043;
-                case "RBB":
-                    return 4044;
-                case "RBP":
-                    return 4045;
-                case "RAS":
-                    return 4046;
-                case "RBU":
-                    return 4292;
-                case "RBK":
-                    return 4293;
-                case "RB1":
-                    return 4343;
-                case "RB3":
-                    return 4351;
-                case "REV":
-                    return 4363;
-                case "RAH":
-                    return 4364;
-                case "RBQ": // viper, probably don't matter
-                    return 4368;
-
-            }
-            return 0;
-        }
-
-        uint Get_TirePressureMonitor_Table_ID(string bodyStyle)
-        {
-            if (bodyStyle == "PROWLER") return 4173;
-            else return 0;
-        }
-
-        uint Get_MemorySeat_Table_ID(string bodyStyle, string year)
-        {
-            switch (bodyStyle)
-            {
-                case "ZJ":
-                    return 4174;
-                case "LH":
-                    return 4175;
-                case "WJ":
-                    return 4176;
-                case "RS":
-                    if (int.Parse(year) >= 2005) return 4354;
-                    return 4177;
-                case "CS":
-                    if (int.Parse(year) >= 2005) return 4354;
-                    else return 4333;
-                case "R2": // D2???
-                    return 4403;
-            }
-            return 0;
-        }
-
-        uint Get_DoorMux_Table_ID(string bodyStyle)
-        {
-            switch (bodyStyle)
-            {
-                case "WJ":
-                    return 4179;
-                case "ZJ":
-                    return 4203;
-                case "CS":
-                    return 4336;
-            }
-            return 0;
-        }
-
-        uint Get_VehicleInfoCenter_Table_ID(string bodyStyle, string year)
-        {
-            switch (bodyStyle)
-            {
-                case "ZJ":
-                    return 4056;
-                case "WJ":
-                    if (int.Parse(year) >= 2001) return 4243;
-                    else return 4057;
-                case "RS":
-                case "RG":
-                    return 4241;
-                case "LH":
-                    return 4242;
-                case "AN":
-                case "DN":
-                    return 4304;
-                case "DR":
-                    return 4304;
-                case "CS":
-                    if (int.Parse(year) >= 2007) return 4370;
-                    else return 4319;
-                case "KJ":
-                    return 4324;
-            }
-            return 0;
-        }
-
         bool GetIsClimateModuleCommunicating()
         {
             if (arduino.ConnectedProtocol == Protocol.J1850)
@@ -522,90 +364,6 @@ namespace CDJPScanMaster
             //no matter what, try CCD as a backup
             List<byte> ccdResponse = arduino.SendMessageAndGetResponse(0xB2, 0x98, 0x24, 0x01, 0x00);
             return ccdResponse.Count > 0;
-        }
-
-
-
-        uint Get_Body_Table_ID(string year, string bodyStyle, string bcmStyle)
-        {
-            switch (bodyStyle)
-            {
-                case "LH":
-                    if (GetIsTheftModuleCommunicating()) return 4098;
-                    else return 4101;
-                case "WJ":
-                    if (GetIsTheftModuleCommunicating())
-                    {
-                        if (GetIsClimateModuleCommunicating()) return 4104;
-                        else return 4105;
-                    }
-                    else
-                    {
-                        if (GetIsClimateModuleCommunicating()) return 4103;
-                        else return 4102;
-                    }
-                case "AN":
-                    if (int.Parse(year) >= 2001) return 4125;
-                    else return 4106;
-                case "AB":
-                    return 4107;
-                case "BR":
-                case "BE":
-                    return 4108;
-                case "DN":
-                    if (int.Parse(year) >= 2001) return 4125;
-                    else return 4109;
-                case "ZJ":
-                    if (GetIsTheftModuleCommunicating()) return 4111;
-                    else return 4110;
-                case "JA":
-                    if (bcmStyle == "Premium")
-                    {
-                        if (GetIsTheftModuleCommunicating()) return 4114;
-                        else return 4113;
-                    }
-                    else return 4112;
-                case "PROWLER": //body style code??
-                    if (year.StartsWith("200")) return 4115;
-                    else return 4123;
-                case "JX":
-                    if (bcmStyle == "Premium")
-                    {
-                        if (GetIsTheftModuleCommunicating()) return 4118;
-                        else return 4117;
-                    }
-                    else return 4116;
-                case "NS":
-                case "GS":
-                    if (bcmStyle == "Premium")
-                    {
-                        if (GetIsTheftModuleCommunicating()) return 4122;
-                        else return 4121;
-                    }
-                    else if (bcmStyle == "Mid") return 4120;
-                    else return 4119;
-                case "JR":
-                    if (bcmStyle == "Premium") return 4206;
-                    else if (bcmStyle == "Mid") return 4205;
-                    else return 4204; // base bcm
-                case "RS":
-                case "RG":
-                    if (bcmStyle == "Premium")
-                    {
-                        if (GetIsTheftModuleCommunicating()) return 4210;
-                        else return 4209;
-                    }
-                    else if (bcmStyle == "Mid") return 4208;
-                    else return 4207;
-                case "KJ":
-                    return 4272;
-                case "ZB":
-                    if (year == "2008") return 4397;
-                    else return 4313;
-                case "CS":
-                    return 4328;
-            }
-            return 0;
         }
 
         string GetBCMModuleLevel_CCD()

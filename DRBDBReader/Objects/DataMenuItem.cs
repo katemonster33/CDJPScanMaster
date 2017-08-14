@@ -1,18 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace DRBDB.Objects
+namespace ScanMaster.Database.Objects
 {
     public class DataMenuItem
     {
-        Database database;
+        DRBDatabase database;
         public uint ID { get; private set; }
         public uint ModuleTypeID { get; private set; }
         public uint NameID { get; private set; }
         public int Order { get; private set; }
         public List<uint> FunctionIDs { get; private set; }
         public List<uint> TXGroupIDs { get; private set; }
-        public DataMenuItem(Database parentDb, uint id, uint moduleTypeId, uint nameId, int order)
+        public DataMenuItem(DRBDatabase parentDb, uint id, uint moduleTypeId, uint nameId, int order)
         {
             database = parentDb;
             ID = id;

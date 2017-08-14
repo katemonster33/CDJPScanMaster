@@ -1,8 +1,8 @@
-﻿using DRBDB.Converters;
-using DRBDB.Helpers;
+﻿using ScanMaster.Database.Converters;
+using ScanMaster.Database.Helpers;
 using System;
 
-namespace DRBDB.Objects
+namespace ScanMaster.Database.Objects
 {
     public class StateDataScaler : DataScaler
     {

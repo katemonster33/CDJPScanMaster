@@ -1,15 +1,15 @@
-﻿using DRBDB.Helpers;
+﻿using ScanMaster.Database.Helpers;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DRBDB.Objects
+namespace ScanMaster.Database.Objects
 {
     public class StateDataFormatter : DataFormatter
     {
-        Database database;
+        DRBDatabase database;
         public uint ID { get; private set; }
         public List<KeyValuePair<uint, uint>> StateIDs { get; private set; }
-        public StateDataFormatter(Database parentDb, uint id)
+        public StateDataFormatter(DRBDatabase parentDb, uint id)
         {
             database = parentDb;
             ID = id;

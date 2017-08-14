@@ -1,20 +1,20 @@
-﻿using DRBDB.Helpers;
+﻿using ScanMaster.Database.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DRBDB.Objects
+namespace ScanMaster.Database.Objects
 {
     public class BinaryDataFormatter : DataFormatter
     {
-        Database database;
+        DRBDatabase database;
         public uint ID { get; private set; }
         public uint FalseStringID { get; private set; }
         public uint TrueStringID { get; private set; }
 
-        public BinaryDataFormatter(Database parentDb, uint id, uint falseStringId, uint trueStringId)
+        public BinaryDataFormatter(DRBDatabase parentDb, uint id, uint falseStringId, uint trueStringId)
         {
             database = parentDb;
             ID = id;

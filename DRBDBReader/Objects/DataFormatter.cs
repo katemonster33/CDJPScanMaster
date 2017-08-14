@@ -1,6 +1,6 @@
-﻿using DRBDB.Helpers;
+﻿using ScanMaster.Database.Helpers;
 
-namespace DRBDB.Objects
+namespace ScanMaster.Database.Objects
 {
     public interface DataFormatter
     {
