@@ -952,7 +952,7 @@ Source: http://www.onsemi.com/pub/Collateral/NTZD5110N-D.PDF</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="ISO1050">
+<deviceset name="ISO1050" prefix="U">
 <description>&lt;p&gt;&lt;b&gt;Isolated CAN Transceiver&lt;/b&gt;&lt;/p&gt;
 
 Source: http://www.ti.com/lit/ds/symlink/iso1050.pdf</description>
