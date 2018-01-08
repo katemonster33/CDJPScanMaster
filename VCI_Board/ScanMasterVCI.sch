@@ -8333,7 +8333,7 @@ Source: http://www.diodes.com/datasheets/ds23001.pdf</description>
 <smd name="8" x="1.475" y="0" dx="0.7" dy="0.3" layer="1"/>
 <smd name="9" x="1.475" y="0.5" dx="0.7" dy="0.3" layer="1"/>
 <smd name="10" x="1.475" y="1" dx="0.7" dy="0.3" layer="1"/>
-<smd name="P$11" x="0" y="0" dx="1.58" dy="2.35" layer="1"/>
+<smd name="EPAD" x="0" y="0" dx="1.58" dy="2.35" layer="1"/>
 <text x="-1.5" y="1.75" size="0.6096" layer="25" font="vector" ratio="12">&gt;NAME</text>
 <text x="-1.5" y="-1.75" size="0.6096" layer="27" font="vector" ratio="12" align="top-left">&gt;VALUE</text>
 <wire x1="-1.5" y1="1.5" x2="-1.5" y2="-1.5" width="0.127" layer="21"/>
@@ -8755,12 +8755,12 @@ Synchronous Step-Down DC-DC Converter (3.3V output)&lt;/b&gt;&lt;/p&gt;
 <connects>
 <connect gate="G$1" pin="EN_UVLO" pad="3"/>
 <connect gate="G$1" pin="FB_VO" pad="5"/>
-<connect gate="G$1" pin="GND" pad="9"/>
+<connect gate="G$1" pin="GND" pad="9 EPAD"/>
 <connect gate="G$1" pin="LX" pad="10"/>
 <connect gate="G$1" pin="NC" pad="7"/>
 <connect gate="G$1" pin="PGND" pad="1"/>
 <connect gate="G$1" pin="RST" pad="8"/>
-<connect gate="G$1" pin="SS" pad="6 P$11"/>
+<connect gate="G$1" pin="SS" pad="6"/>
 <connect gate="G$1" pin="VCC" pad="4"/>
 <connect gate="G$1" pin="VIN" pad="2"/>
 </connects>
