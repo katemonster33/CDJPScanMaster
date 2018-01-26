@@ -10432,7 +10432,7 @@ You are welcome to use this library for commercial purposes. For attribution, we
 <pinref part="U1" gate="G$1" pin="VIN"/>
 </segment>
 </net>
-<net name="N$12" class="0">
+<net name="N$12" class="2">
 <segment>
 <pinref part="L1" gate="G$1" pin="1"/>
 <wire x1="195.58" y1="78.74" x2="187.96" y2="78.74" width="0.1524" layer="91"/>
@@ -10482,7 +10482,7 @@ You are welcome to use this library for commercial purposes. For attribution, we
 <pinref part="U5" gate="G$1" pin="SS"/>
 </segment>
 </net>
-<net name="N$19" class="0">
+<net name="N$19" class="3">
 <segment>
 <wire x1="182.88" y1="116.84" x2="185.42" y2="116.84" width="0.1524" layer="91"/>
 <wire x1="185.42" y1="116.84" x2="185.42" y2="119.38" width="0.1524" layer="91"/>
