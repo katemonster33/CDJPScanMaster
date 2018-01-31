@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="50" unitdist="mil" unit="mil" style="lines" multiple="1" display="yes" altdistance="5" altunitdist="mil" altunit="mil"/>
+<grid distance="0.1" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="5" altunitdist="mil" altunit="mil"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
@@ -305,17 +305,17 @@ Source:  Fairchild Semiconductor International ssot6_dim.pdf&lt;br&gt;
 <package name="SOT563">
 <description>&lt;b&gt;SOT-563&lt;/b&gt;&lt;p&gt;
 Source: www.centralsemi.com ..SOT-563PD.pdf</description>
-<wire x1="-0.8" y1="0.55" x2="-0.8" y2="-0.55" width="0.1016" layer="21"/>
-<wire x1="0.8" y1="-0.55" x2="0.8" y2="0.55" width="0.1016" layer="21"/>
-<wire x1="-0.8" y1="0.55" x2="0.8" y2="0.55" width="0.1016" layer="51"/>
-<wire x1="-0.8" y1="-0.55" x2="0.8" y2="-0.55" width="0.1016" layer="51"/>
+<wire x1="-0.8" y1="0.6" x2="-0.8" y2="-0.6" width="0.1016" layer="21"/>
+<wire x1="0.8" y1="-0.6" x2="0.8" y2="0.6" width="0.1016" layer="21"/>
+<wire x1="-0.8" y1="0.6" x2="0.8" y2="0.6" width="0.1016" layer="51"/>
+<wire x1="-0.8" y1="-0.6" x2="0.8" y2="-0.6" width="0.1016" layer="51"/>
 <circle x="-0.575" y="-0.325" radius="0.075" width="0" layer="21"/>
-<smd name="1" x="-0.5" y="-0.7" dx="0.4" dy="0.6" layer="1"/>
-<smd name="2" x="0" y="-0.7" dx="0.4" dy="0.6" layer="1"/>
-<smd name="3" x="0.5" y="-0.7" dx="0.4" dy="0.6" layer="1"/>
-<smd name="4" x="0.5" y="0.7" dx="0.4" dy="0.6" layer="1" rot="R180"/>
-<smd name="5" x="0" y="0.7" dx="0.4" dy="0.6" layer="1" rot="R180"/>
-<smd name="6" x="-0.5" y="0.7" dx="0.4" dy="0.6" layer="1" rot="R180"/>
+<smd name="1" x="-0.5" y="-0.675" dx="0.3" dy="0.45" layer="1"/>
+<smd name="2" x="0" y="-0.675" dx="0.3" dy="0.45" layer="1"/>
+<smd name="3" x="0.5" y="-0.675" dx="0.3" dy="0.45" layer="1"/>
+<smd name="4" x="0.5" y="0.675" dx="0.3" dy="0.45" layer="1" rot="R180"/>
+<smd name="5" x="0" y="0.675" dx="0.3" dy="0.45" layer="1" rot="R180"/>
+<smd name="6" x="-0.5" y="0.675" dx="0.3" dy="0.45" layer="1" rot="R180"/>
 <text x="-1.27" y="1.27" size="1.27" layer="25">&gt;NAME</text>
 <text x="-1.27" y="-2.54" size="1.27" layer="27">&gt;VALUE</text>
 <rectangle x1="-0.65" y1="-0.85" x2="-0.35" y2="-0.55" layer="51" rot="R180"/>
