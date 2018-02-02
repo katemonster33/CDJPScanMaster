@@ -16560,11 +16560,6 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 </net>
 <net name="USB_D-" class="0">
 <segment>
-<pinref part="IC1" gate="G$1" pin="PD7"/>
-<wire x1="71.12" y1="30.48" x2="73.66" y2="30.48" width="0.1524" layer="91"/>
-<label x="73.66" y="30.48" size="1.27" layer="95" xref="yes"/>
-</segment>
-<segment>
 <pinref part="R26" gate="G$1" pin="2"/>
 <wire x1="182.88" y1="15.24" x2="172.72" y2="15.24" width="0.1524" layer="91"/>
 <pinref part="R28" gate="G$1" pin="1"/>
@@ -16573,13 +16568,13 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <junction x="172.72" y="15.24"/>
 <label x="167.64" y="15.24" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
-</net>
-<net name="USB_D+" class="0">
 <segment>
 <pinref part="IC1" gate="G$1" pin="PD6"/>
 <wire x1="71.12" y1="27.94" x2="73.66" y2="27.94" width="0.1524" layer="91"/>
 <label x="73.66" y="27.94" size="1.27" layer="95" xref="yes"/>
 </segment>
+</net>
+<net name="USB_D+" class="0">
 <segment>
 <pinref part="R25" gate="G$1" pin="2"/>
 <wire x1="182.88" y1="22.86" x2="180.34" y2="22.86" width="0.1524" layer="91"/>
@@ -16588,6 +16583,11 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <wire x1="180.34" y1="22.86" x2="180.34" y2="12.7" width="0.1524" layer="91"/>
 <junction x="180.34" y="22.86"/>
 <label x="167.64" y="22.86" size="1.27" layer="95" rot="R180" xref="yes"/>
+</segment>
+<segment>
+<pinref part="IC1" gate="G$1" pin="PD7"/>
+<wire x1="71.12" y1="30.48" x2="73.66" y2="30.48" width="0.1524" layer="91"/>
+<label x="73.66" y="30.48" size="1.27" layer="95" xref="yes"/>
 </segment>
 </net>
 <net name="N$24" class="0">
@@ -17274,12 +17274,14 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <net name="N$4" class="0">
 <segment>
 <wire x1="30.48" y1="106.68" x2="33.02" y2="106.68" width="0.1524" layer="91"/>
-<wire x1="33.02" y1="106.68" x2="33.02" y2="116.84" width="0.1524" layer="91"/>
+<wire x1="33.02" y1="109.22" x2="33.02" y2="116.84" width="0.1524" layer="91"/>
 <wire x1="33.02" y1="116.84" x2="38.1" y2="116.84" width="0.1524" layer="91"/>
 <pinref part="D2" gate="B" pin="A"/>
 <wire x1="35.56" y1="106.68" x2="33.02" y2="106.68" width="0.1524" layer="91"/>
 <pinref part="Q7" gate="A" pin="S"/>
 <pinref part="Q7" gate="B" pin="S"/>
+<wire x1="33.02" y1="109.22" x2="33.02" y2="106.68" width="0.1524" layer="91"/>
+<junction x="33.02" y="106.68"/>
 </segment>
 </net>
 <net name="ISO-K" class="0">
