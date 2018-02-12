@@ -194,7 +194,7 @@
 <smd name="8" x="0.505" y="0" dx="0.7" dy="0.3" layer="1"/>
 <smd name="9" x="0.505" y="0.5" dx="0.7" dy="0.3" layer="1"/>
 <smd name="10" x="0.505" y="1" dx="0.7" dy="0.3" layer="1"/>
-<smd name="EPAD" x="-0.48" y="0" dx="0.8" dy="2.08" layer="1"/>
+<smd name="EPAD" x="-0.48" y="0" dx="0.6" dy="2.08" layer="1"/>
 <text x="-1.5" y="1.75" size="0.6096" layer="25" font="vector" ratio="12">&gt;NAME</text>
 <text x="-1.5" y="-1.75" size="0.6096" layer="27" font="vector" ratio="12" align="top-left">&gt;VALUE</text>
 <wire x1="-1.5" y1="1.5" x2="-1.5" y2="-1.5" width="0.127" layer="21"/>
@@ -351,20 +351,19 @@ Source: www.centralsemi.com ..SOT-563PD.pdf</description>
 <rectangle x1="-1.54" y1="1.7" x2="-1.04" y2="2.95" layer="51"/>
 <rectangle x1="-4.08" y1="1.7" x2="-3.58" y2="2.95" layer="51"/>
 </package>
-<package name="SOT363">
+<package name="DIODE_SOT363">
 <description>&lt;b&gt;SOT-363 (SC-706 Lead)&lt;/b&gt;&lt;p&gt;
 Source: &lt;a href="http://www.farnell.com/datasheets/461166.pdf"&gt; Data sheet &lt;/a&gt;</description>
-<wire x1="-1" y1="0.55" x2="1" y2="0.55" width="0.2032" layer="51"/>
-<wire x1="1" y1="0.55" x2="1" y2="-0.55" width="0.2032" layer="21"/>
-<wire x1="1" y1="-0.55" x2="-1" y2="-0.55" width="0.2032" layer="51"/>
-<wire x1="-1" y1="-0.55" x2="-1" y2="0.55" width="0.2032" layer="21"/>
-<circle x="-0.7" y="-0.1625" radius="0.15" width="0" layer="21"/>
-<smd name="1" x="-0.65" y="-0.8" dx="0.4" dy="0.8" layer="1"/>
-<smd name="2" x="0" y="-0.8" dx="0.4" dy="0.8" layer="1"/>
-<smd name="3" x="0.65" y="-0.8" dx="0.4" dy="0.8" layer="1"/>
-<smd name="4" x="0.65" y="0.8" dx="0.4" dy="0.8" layer="1"/>
-<smd name="5" x="0" y="0.8" dx="0.4" dy="0.8" layer="1"/>
-<smd name="6" x="-0.65" y="0.8" dx="0.4" dy="0.8" layer="1"/>
+<wire x1="-1" y1="0.6" x2="1" y2="0.6" width="0.2032" layer="51"/>
+<wire x1="1" y1="0.6" x2="1" y2="-0.6" width="0.2032" layer="21"/>
+<wire x1="1" y1="-0.6" x2="-1" y2="-0.6" width="0.2032" layer="51"/>
+<wire x1="-1" y1="-0.6" x2="-1" y2="0.6" width="0.2032" layer="21"/>
+<smd name="1" x="-0.65" y="-0.95" dx="0.4" dy="0.6" layer="1"/>
+<smd name="2" x="0" y="-0.95" dx="0.4" dy="0.6" layer="1"/>
+<smd name="3" x="0.65" y="-0.95" dx="0.4" dy="0.6" layer="1"/>
+<smd name="4" x="0.65" y="0.95" dx="0.4" dy="0.6" layer="1"/>
+<smd name="5" x="0" y="0.95" dx="0.4" dy="0.6" layer="1"/>
+<smd name="6" x="-0.65" y="0.95" dx="0.4" dy="0.6" layer="1"/>
 <text x="-1.1" y="1.45" size="1.27" layer="25">&gt;NAME</text>
 <text x="-1.1" y="-2.7" size="1.27" layer="27">&gt;VALUE</text>
 <rectangle x1="-0.8" y1="-1.1" x2="-0.5" y2="-0.6" layer="51"/>
@@ -909,7 +908,7 @@ Source: http://www.ti.com/lit/ds/symlink/sn65hvda195-q1.pdf</description>
 <deviceset name="NDC7002N" prefix="Q">
 <description>&lt;p&gt;&lt;b&gt;Dual N-Channel Enhancement Mode Field Effect Transistor&lt;/b&gt;&lt;/p&gt;
 
-Source: http://www.mouser.com/ds/2/149/NDC7002N-1011599.NTZD5110NT1G</description>
+Source: http://www.mouser.com/ds/2/149/NDC7002N-1011599.pdf</description>
 <gates>
 <gate name="A" symbol="N-MOSFET" x="-7.62" y="0"/>
 <gate name="B" symbol="N-MOSFET" x="7.62" y="0"/>
@@ -989,7 +988,7 @@ Source: https://www.diodes.com/assets/Datasheets/ds30108.pdf</description>
 <gate name="B" symbol="D-ZENER" x="7.62" y="0"/>
 </gates>
 <devices>
-<device name="" package="SOT363">
+<device name="" package="DIODE_SOT363">
 <connects>
 <connect gate="A" pin="A" pad="2"/>
 <connect gate="A" pin="C" pad="3"/>
