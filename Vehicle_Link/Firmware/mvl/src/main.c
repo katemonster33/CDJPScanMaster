@@ -11,6 +11,18 @@
 #include "main.h"
 #include "string.h"
 
+#define PAYLOAD_FLAG 0x80
+
+#define CMD_SET_MUX_SCIAE		1
+#define CMD_SET_MUX_SCIAT		2
+#define CMD_SET_MUX_SCIBE		3
+#define CMD_SET_MUX_SCIBT		4
+#define CMD_SET_MUX_9141		5
+#define CMD_SET_SCI_HISPEED		6
+#define CMD_SET_SCI_LOSPEED		7
+#define CMD_ISO9141_5BAUDINIT	8
+#define CMD_ISO9141_FASTINIT	9
+
 void usb_setup_rx_buffer(struct byte_buffer *usbBuffer, struct byte_buffer *srcBuffer, uint8_t protocol);
 
 void usart_setup(USART_t* usart, int8_t bscale, uint16_t bsel)
@@ -68,7 +80,6 @@ int main (void)
 	irq_initialize_vectors();
 	cpu_irq_enable();
 	
-
 	// Initialize the sleep manager
 	sleepmgr_init();
 	/* Insert system clock initialization code here (sysclk_init()). */
@@ -76,16 +87,17 @@ int main (void)
 	board_init();
 	udc_start();
 	PORTB.DIRSET = PIN_SCI_A_ENGINE_RX_EN | PIN_SCI_B_ENGINE_RX_EN | PIN_SCI_A_TRANS_RX_EN | PIN_SCI_B_TRANS_RX_EN;
-	PORTC.OUTSET = PIN_CCD_TX;
+	PORTC.DIRSET = PIN_CCD_TX;
 	PORTD.DIRSET = PIN_ISO_K_EN;
 	PORTE.DIRSET = PIN_SCI_A_TX_EN;
-	
+	PORTR.DIRSET |= PIN0_bm | PIN1_bm;
+	PORTR.OUTSET |= PIN0_bm;
 	set_mux_config(MUX_CONFIG_NONE); // reset all enable pins to default values
 	
-	usart_setup(&UART_CCD, BAUD_7812_BSCALE, BAUD_7812_BSEL);
-	usart_setup(&UART_SCI, BAUD_7812_BSCALE, BAUD_7812_BSEL);
+	sci_setup_lo_speed();
 	j1850vpw_setup();
 	iso9141_setup();
+	ccd_setup();
 	struct byte_buffer pendingRxJ1850, pendingRxIso9141, pendingRxCcd, pendingRxSci;
 	struct byte_buffer pendingTxUsb, pendingRxUsb;
 	pendingTxUsb.idxLast = pendingRxUsb.idxLast = 0;
@@ -94,17 +106,49 @@ int main (void)
 		pendingRxJ1850.idxLast = pendingRxIso9141.idxLast = pendingRxCcd.idxLast = pendingRxSci.idxLast = 0;
 		j1850vpw_do_tasks(&pendingRxJ1850, 0);
 		iso9141_do_tasks(&pendingRxIso9141, 0);
+		ccd_do_tasks(&pendingRxCcd, 0);
+		sci_do_tasks(&pendingRxSci, 0);
+		// if we aren't currently sending anything via USB, check the protocol buffers for something to send.
 		if(pendingTxUsb.idxLast == 0)
 		{
-			if(pendingRxJ1850.idxLast != 0)			usb_setup_rx_buffer(&pendingTxUsb, &pendingRxJ1850, 0);
+			if(pendingRxJ1850.idxLast != 
+			0)			usb_setup_rx_buffer(&pendingTxUsb, &pendingRxJ1850, 0);
 			else if(pendingRxIso9141.idxLast != 0)	usb_setup_rx_buffer(&pendingTxUsb, &pendingRxIso9141, 1);
 			else if(pendingRxCcd.idxLast != 0)		usb_setup_rx_buffer(&pendingTxUsb, &pendingRxCcd, 2);
 			else if(pendingRxSci.idxLast != 0)		usb_setup_rx_buffer(&pendingTxUsb, &pendingRxSci, 3);
 		}
-		if(pendingRxUsb.idxLast != 0 && ((pendingRxUsb.bytes[0] & 0x80) == 0 || pendingRxUsb.idxLast == ((pendingRxUsb.bytes[0] & 0x7F) + 1)))
+		if(pendingRxUsb.idxLast != 0)
 		{
-			// USB RX buffer contains a full request, parse logic goes here.
-			pendingRxUsb.idxLast = 0;
+			if((pendingRxUsb.bytes[0] & 0x80) == 0) // not a payload request, 1-byte command
+			{
+				switch(pendingRxUsb.bytes[0])
+				{
+					case CMD_SET_MUX_SCIAE:
+					case CMD_SET_MUX_SCIAT:
+					case CMD_SET_MUX_SCIBE:
+					case CMD_SET_MUX_SCIBT:
+					case CMD_SET_MUX_9141:
+						set_mux_config(pendingRxUsb.bytes[0]);
+						break;
+					case CMD_SET_SCI_HISPEED:
+						sci_setup_hi_speed();
+						break;
+					case CMD_SET_SCI_LOSPEED:
+						sci_setup_lo_speed();
+						break;
+					case CMD_ISO9141_5BAUDINIT:
+						// TO DO
+						break;
+					case CMD_ISO9141_FASTINIT:
+						// TO DO
+						break;
+				}
+				pendingRxUsb.idxLast = 0;
+			}
+			else if(pendingRxUsb.idxLast == ((pendingRxUsb.bytes[0] & 0x7F) + 1))
+			{
+				pendingRxUsb.idxLast = 0;
+			}
 		}
 		if(udi_cdc_is_tx_ready() && pendingTxUsb.idxLast != 0)
 		{

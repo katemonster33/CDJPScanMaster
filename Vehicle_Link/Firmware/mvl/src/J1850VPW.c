@@ -30,9 +30,10 @@
 #define PIN_J1850VPW_RX			PIN0_bm // PORT D
 #define PIN_J1850VPW_TX			PIN1_bm // PORT D
 
-#define TIMER_J1850VPW			TCC0
+#define TIMER_J1850VPW			TCD0
 
 void j1850_rx_push_bit(bool highBit);
+uint8_t j1850vpw_calc_crc(uint8_t *buffer, uint8_t len);
 
 bool transmitActive = false;
 uint8_t currentBit = 0;
@@ -53,7 +54,7 @@ void j1850vpw_do_tasks(struct byte_buffer *readBuffer, struct byte_buffer *txBuf
 	bool currentJ1850State = (PORTD.IN & PIN_J1850VPW_RX) != 0;
 	if(rxInProgress == false)
 	{
-		// if J1850 just went high, then we're waiting
+		// if J1850 just went high, then we're waiting for timer to reach RX_SOF_MIN
 		if(currentJ1850State == true && lastJ1850State == false) TIMER_J1850VPW.CNT = 0;	
 		else if(currentJ1850State == false && lastJ1850State == true && TIMER_J1850VPW.CNT > RX_SOF_MIN) // have we reached RX_SOF_MIN?
 		{
@@ -83,7 +84,13 @@ void j1850vpw_do_tasks(struct byte_buffer *readBuffer, struct byte_buffer *txBuf
 		else if(TIMER_J1850VPW.CNT > RX_EOF_MIN)
 		{
 			rxInProgress = false;
-			memcpy(readBuffer, &j1850_rx_buffer, sizeof(struct byte_buffer));
+			uint8_t crc = j1850vpw_calc_crc(j1850_rx_buffer.bytes, j1850_rx_buffer.idxLast - 1);
+			if(crc == j1850_rx_buffer.bytes[j1850_rx_buffer.idxLast - 1] && readBuffer != NULL)
+			{
+				j1850_rx_buffer.idxLast--;
+				memcpy(readBuffer, &j1850_rx_buffer, sizeof(struct byte_buffer));
+			}
+			j1850_rx_buffer.idxLast = 0;
 		}
 	}
 
@@ -100,4 +107,29 @@ void j1850_rx_push_bit(bool highBit)
 		currentBit = 0;
 		j1850_rx_buffer.idxLast++;
 	}
+}
+
+uint8_t j1850vpw_calc_crc(uint8_t *buffer, uint8_t len)
+{
+	uint8_t crc_reg=0xff,poly,i,j;
+	uint8_t *byte_point;
+	uint8_t bit_point;
+
+	for (i = 0, byte_point = buffer; i < len; ++i, ++byte_point)
+	{
+		for (j = 0, bit_point = 0x80 ; j < 8; ++j, bit_point >>= 1)
+		{
+			if (bit_point & *byte_point)	// case for new bit = 1
+			{
+				poly = (crc_reg & 0x80 ? 1 : 0x1C);
+				crc_reg= ( (crc_reg << 1) | 1) ^ poly;
+			}
+			else		// case for new bit = 0
+			{
+				poly = (crc_reg & 0x80 ? 0x1D : 0);
+				crc_reg = (crc_reg << 1) ^ poly;
+			}
+		}
+	}
+	return ~crc_reg;	// Return CRC
 }

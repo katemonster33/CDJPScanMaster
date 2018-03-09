@@ -38,20 +38,11 @@ typedef enum MUX_CONFIG_enum
 #define BAUD_7812_BSEL		255
 #define BAUD_62500_BSCALE	0
 #define BAUD_62500_BSEL		31
-#define BAUD_5_BSCALE		7
-#define BAUD_5_BSEL			3124
-#define BAUD_10400_BSCALE	-4
-#define BAUD_10400_BSEL		3061
-#define BAUD_115200_BSCALE	-6
-#define BAUD_115200_BSEL	1047
-
-#define UART_CCD		USARTC0
-#define UART_SCI		USARTE0
 
 #define BYTE_BUFFER_SIZE	64
 struct byte_buffer
 {
-	char bytes[BYTE_BUFFER_SIZE];
+	uint8_t bytes[BYTE_BUFFER_SIZE];
 	uint8_t idxCurr;
 	uint8_t idxLast;
 };

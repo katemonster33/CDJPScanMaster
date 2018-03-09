@@ -359,6 +359,9 @@
     <Folder Include="src\config\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\SCI.c">
+      <SubType>compile</SubType>
+    </Compile>
     <None Include="src\ASF\xmega\drivers\tc\tc.h">
       <SubType>compile</SubType>
     </None>
@@ -410,6 +413,9 @@
     <None Include="src\ASF\xmega\drivers\usb\usb_device.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\CCD.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\definitions.h">
       <SubType>compile</SubType>
     </Compile>
