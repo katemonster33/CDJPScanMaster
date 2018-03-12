@@ -23,6 +23,8 @@
 #define CMD_ISO9141_5BAUDINIT	8
 #define CMD_ISO9141_FASTINIT	9
 
+static volatile bool main_b_cdc_enable = false;
+
 void usb_setup_rx_buffer(struct byte_buffer *usbBuffer, struct byte_buffer *srcBuffer, uint8_t protocol);
 
 void usart_setup(USART_t* usart, int8_t bscale, uint16_t bsel)
@@ -87,7 +89,6 @@ int main (void)
 	board_init();
 	udc_start();
 	PORTB.DIRSET = PIN_SCI_A_ENGINE_RX_EN | PIN_SCI_B_ENGINE_RX_EN | PIN_SCI_A_TRANS_RX_EN | PIN_SCI_B_TRANS_RX_EN;
-	PORTC.DIRSET = PIN_CCD_TX;
 	PORTD.DIRSET = PIN_ISO_K_EN;
 	PORTE.DIRSET = PIN_SCI_A_TX_EN;
 	PORTR.DIRSET |= PIN0_bm | PIN1_bm;
@@ -111,8 +112,7 @@ int main (void)
 		// if we aren't currently sending anything via USB, check the protocol buffers for something to send.
 		if(pendingTxUsb.idxLast == 0)
 		{
-			if(pendingRxJ1850.idxLast != 
-			0)			usb_setup_rx_buffer(&pendingTxUsb, &pendingRxJ1850, 0);
+			if(pendingRxJ1850.idxLast != 0)			usb_setup_rx_buffer(&pendingTxUsb, &pendingRxJ1850, 0);
 			else if(pendingRxIso9141.idxLast != 0)	usb_setup_rx_buffer(&pendingTxUsb, &pendingRxIso9141, 1);
 			else if(pendingRxCcd.idxLast != 0)		usb_setup_rx_buffer(&pendingTxUsb, &pendingRxCcd, 2);
 			else if(pendingRxSci.idxLast != 0)		usb_setup_rx_buffer(&pendingTxUsb, &pendingRxSci, 3);
@@ -152,8 +152,8 @@ int main (void)
 		}
 		if(udi_cdc_is_tx_ready() && pendingTxUsb.idxLast != 0)
 		{
-			iram_size_t bytesRemaining = udi_cdc_write_buf(pendingTxUsb.bytes + pendingTxUsb.idxCurr, pendingTxUsb.idxLast - pendingTxUsb.idxCurr);
-			pendingTxUsb.idxCurr = pendingTxUsb.idxLast - bytesRemaining;
+			udi_cdc_putc(pendingTxUsb.bytes[pendingTxUsb.idxCurr]);
+			pendingTxUsb.idxCurr++;
 			// set idxLast to zero, this indicates buffer empty
 			if(pendingTxUsb.idxCurr >= pendingTxUsb.idxLast) pendingTxUsb.idxLast = 0;
 		}

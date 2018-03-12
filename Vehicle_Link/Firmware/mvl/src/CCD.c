@@ -11,6 +11,8 @@
 
 void ccd_setup()
 {
+	PORTC.DIRSET = PIN_CCD_TX;
+	//PORTC.OUTSET = PIN_CCD_TX; // write it high immediately so we aren't driving the bus accidentally
 	usart_setup(&UART_CCD, BAUD_7812_BSCALE, BAUD_7812_BSEL);
 }
 
