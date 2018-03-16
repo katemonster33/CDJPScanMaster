@@ -8,6 +8,7 @@ namespace ScanMaster.Database.Enums
 {
     public enum Protocol
     {
+        Invalid = 0,
         J1850 = 1,
         CCD = 53,
         CCD_2 = 103,

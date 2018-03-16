@@ -41,7 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArduinoCommChannel.cs" />
+    <Compile Include="CommandID.cs" />
     <Compile Include="ArduinoCommHandler.cs" />
     <Compile Include="ModuleTypeID.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

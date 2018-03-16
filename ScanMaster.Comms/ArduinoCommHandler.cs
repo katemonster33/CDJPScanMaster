@@ -14,11 +14,11 @@ namespace ScanMaster.Comms
     {
         StreamWriter commsLogWriter = new StreamWriter("scanmastercomms.log");
         public bool Connected { get; private set; }
-        public Protocol ConnectedProtocol { get; private set; }
         public List<byte> ResponseBuffer { get; private set; }
         SerialPort arduino;
         Task readTask;
         ManualResetEvent responseReceived = new ManualResetEvent(false);
+        Protocol currentMessageProtocol = Protocol.Invalid;
         private ArduinoCommHandler(SerialPort arduino)
         {
             ResponseBuffer = new List<byte>();
@@ -30,11 +30,12 @@ namespace ScanMaster.Comms
 
         public bool EstablishComms()
         {
-            if(!Connected)
-            {
-                responseReceived.Reset();
-                responseReceived.WaitOne(2000);
-            }
+            Connected = true;
+            //if(!Connected)
+            //{
+            //    responseReceived.Reset();
+            //    responseReceived.WaitOne(2000);
+            //}
             return Connected;
         }
 
@@ -47,41 +48,23 @@ namespace ScanMaster.Comms
             commsLogWriter.Dispose();
         }
 
-        byte readHex(char hexA, char hexB)
+        public List<byte> SendMessageAndGetResponse(Protocol protocol, params byte[] message)
         {
-            return (byte)((readHex(hexA) << 4) | readHex(hexB));
-        }
-
-        byte readHex(char hex)
-        {
-            if (hex >= '0' && hex <= '9') return (byte)(hex - '0');
-            else if (hex >= 'a' && hex <= 'f') return (byte)(hex - 'a' + 10);
-            else if (hex >= 'A' && hex <= 'F') return (byte)(hex - 'A' + 10);
-            else throw new ArgumentException();
-        }
-
-        bool isHexString(string str)
-        {
-            foreach (char c in str)
-            {
-                if (!(char.IsDigit(c) || (c >= 'A' && c <= 'F'))) return false;
-            }
-            return true;
-        }
-
-        public List<byte> SendMessageAndGetResponse(params byte[] message)
-        {
-            string messageAscii = string.Empty;
-            for (int i = 0; i < message.Length; i++)
-            {
-                messageAscii += string.Format("{0:X2}", message[i]);
-            }
+            currentMessageProtocol = protocol;
+            List<byte> bytesForXmega = new List<byte>(message);
+            bytesForXmega.Insert(0, (byte)(0x80 | (message.Length + 1)));
+            bytesForXmega.Insert(1, (byte)(protocol));
             responseReceived.Reset();
             ResponseBuffer.Clear();
             for (int retry = 0; retry < 3; retry++)
             {
-                arduino.Write(messageAscii + '\n');
-                commsLogWriter.WriteLine("(TX) " + messageAscii);
+                arduino.Write(bytesForXmega.ToArray(), 0, bytesForXmega.Count);
+                string strLogMsg = "(TX) ";
+                foreach(byte by in bytesForXmega)
+                {
+                    strLogMsg += string.Format("{0:X2} ", by);
+                }
+                commsLogWriter.WriteLine(strLogMsg.TrimEnd(' '));
                 if (responseReceived.WaitOne(500))
                 {
                     return new List<byte>(ResponseBuffer);
@@ -111,33 +94,27 @@ namespace ScanMaster.Comms
             return true;
         }
 
-        void ProcessMessage(string message)
+        void ProcessMessage(List<byte> messageHex)
         {
-            if (message == "OKGO")
-            {
-                Connected = true;
-                return;
-            }
-            else if (!isHexString(message))
-            {
-                responseReceived.Set();
-                return;
-            }
-            List<byte> messageHex = new List<byte>();
-            for (int i = 0; i < message.Length; i += 2)
-            {
-                messageHex.Add(readHex(message[i], message[i + 1]));
-            }
             if (messageHex.Count >= 1)
             {
-                bool isResponse = false;
-                if (ConnectedProtocol == Protocol.CCD || ConnectedProtocol == Protocol.CCD_2)
+                string logMsg = "(RX) ";
+                foreach (byte by in messageHex)
                 {
-                    isResponse = (messageHex[0] == 0xF2 && messageHex.Count == 5);
+                    logMsg += string.Format("{0:X2} ", by);
                 }
-                else if (ConnectedProtocol == Protocol.J1850)
+                commsLogWriter.WriteLine(logMsg);
+                if ((messageHex[0] & 0x80) == 0 || messageHex.Count < 3) return;
+                if (((Protocol)messageHex[1]) != currentMessageProtocol) return;
+                List<byte> messageHexTrim = new List<byte>(messageHex.Skip(2));
+                bool isResponse = false;
+                if (currentMessageProtocol == Protocol.CCD || currentMessageProtocol == Protocol.CCD_2)
                 {
-                    isResponse = (messageHex.Count > 2 && messageHex[0] == 0x26 && ((messageHex[2] & 0x40) != 0));
+                    isResponse = (messageHexTrim[0] == 0xF2 && messageHexTrim.Count == 5);
+                }
+                else if (currentMessageProtocol == Protocol.J1850)
+                {
+                    isResponse = (messageHexTrim.Count > 2 && messageHexTrim[0] == 0x26 && ((messageHexTrim[2] & 0x40) != 0));
                 }
                 else //if (connectedProtocol == Protocol.SCI || connectedProtocol == Protocol.SCI_NGC || connectedProtocol == Protocol.KWP2000)
                 {
@@ -145,36 +122,18 @@ namespace ScanMaster.Comms
                 }
                 if (isResponse)
                 {
-                    commsLogWriter.WriteLine("(RX) " + message);
-                    ResponseBuffer = messageHex;
+                    ResponseBuffer = messageHexTrim;
                     responseReceived.Set();
                 }
             }
         }
 
-        public void ConnectChannel(ArduinoCommChannel channel)
+        public void SendCommand(CommandID cmd)
         {
-            string channelCommand = string.Format("{0:d}\n", (int)channel);
-            arduino.Write(channelCommand);
+            arduino.Write(new byte[] { (byte)cmd }, 0, 1);
             responseReceived.Reset();
-            commsLogWriter.WriteLine("(TX) " + channelCommand.TrimEnd('\n'));
-            responseReceived.WaitOne(1000);
-            switch(channel)
-            {
-                case ArduinoCommChannel.CCD:
-                    ConnectedProtocol = Protocol.CCD;
-                    break;
-                case ArduinoCommChannel.J1850:
-                    ConnectedProtocol = Protocol.J1850;
-                    break;
-                case ArduinoCommChannel.SCI_A_Engine:
-                case ArduinoCommChannel.SCI_B_Engine:
-                    ConnectedProtocol = Protocol.SCI;
-                    break;
-                case ArduinoCommChannel.ISO9141:
-                    ConnectedProtocol = Protocol.KWP2000;
-                    break;
-            }
+            responseReceived.WaitOne(100);
+            commsLogWriter.WriteLine(string.Format("(TX) {0:X2}", cmd));
         }
 
         public static ArduinoCommHandler CreateCommHandler(string portName)
@@ -197,18 +156,24 @@ namespace ScanMaster.Comms
         {
             try
             {
-                string buf = string.Empty;
+                List<byte> bytes = new List<byte>();
                 while (true)
                 {
+                    byte temp = 0;
                     try
                     {
-                        buf = arduino.ReadLine();
+                        temp = (byte)arduino.ReadByte();
                     }
                     catch (TimeoutException)
                     {
                         continue;
                     }
-                    ProcessMessage(buf.TrimEnd('\r'));
+                    bytes.Add(temp);
+                    if((bytes[0] & 0x80) == 0 || (bytes[0] & 0x7F) == (bytes.Count - 1))
+                    {
+                        ProcessMessage(bytes);
+                        bytes.Clear();
+                    }
                     Thread.Sleep(1);
                 }
             }

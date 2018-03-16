@@ -19,23 +19,21 @@ namespace ScanMaster.UI
     public partial class Form1 : Form
     {
         Module selectedModule = null;
-        DRBDatabase drbdb = new DRBDatabase();
         System.Windows.Forms.Timer listBoxUpdater = new System.Windows.Forms.Timer();
         VehicleLinkManager vlm;
         public Form1()
         {
             InitializeComponent();
-            foreach(ModuleType type in drbdb.GetModuleTypes())
+            vlm = new VehicleLinkManager();
+            foreach (ModuleType type in vlm.GetDatabase().GetModuleTypes())
             {
                 listBox1.Items.Add(type);
             }
-            listBox1.Tag = drbdb.GetModuleTypes();
+            listBox1.Tag = vlm.GetDatabase().GetModuleTypes();
             cmbComPorts.Items.AddRange(SerialPort.GetPortNames());
             listBoxUpdater.Interval = 100;
             listBoxUpdater.Tick += ListBoxUpdater_Tick;
             listBoxUpdater.Enabled = true;
-
-            vlm = new VehicleLinkManager();
         }
 
         void ListBoxUpdater_Tick(object sender, EventArgs e)
@@ -56,7 +54,7 @@ namespace ScanMaster.UI
         void LoadModule(Module module)
         {
             selectedModule = module;
-            List<Function> modulesFunctions = drbdb.GetModuleFunctionsWithoutTX(selectedModule);
+            List<Function> modulesFunctions = vlm.GetDatabase().GetModuleFunctionsWithoutTX(selectedModule);
             Dictionary<uint, TXItem> FunctionIDToTXItem = new Dictionary<uint, TXItem>();
             foreach (TXItem item in selectedModule.TXItems.Where(tx => tx.Function != null))
             {
@@ -65,7 +63,7 @@ namespace ScanMaster.UI
             listBox1.InvokeIfRequired(() =>
             {
                 listBox1.Items.Clear();
-                foreach (ModuleMenuItem moduleMenu in drbdb.GetModuleMenuItems())
+                foreach (ModuleMenuItem moduleMenu in vlm.GetDatabase().GetModuleMenuItems())
                 {
                     if (moduleMenu.ID == 1 || moduleMenu.ID == 4)
                     {
@@ -170,6 +168,22 @@ namespace ScanMaster.UI
             {
                 pnlScanMenu.InvokeIfRequired(() => pnlScanMenu.Visible = false);
             }
+        }
+
+        private void btnSendMsg_Click(object sender, EventArgs e)
+        {
+            string[] msgTokens = txtMsgToSend.Text.Split(' ');
+            List<byte> messageBytes = new List<byte>();
+            foreach(string tok in msgTokens)
+            {
+                messageBytes.Add(Convert.ToByte(tok, 16));
+            }
+            //vlm.SendMessage(messageBytes);
+        }
+
+        private void btnSetMux_Click(object sender, EventArgs e)
+        {
+            //vlm.ConnectChannel(chan);
         }
     }
 }
