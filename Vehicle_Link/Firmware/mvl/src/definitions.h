@@ -10,16 +10,6 @@
 #define DEFINITIONS_H_
 #include <stdint.h>
 
-typedef enum MUX_CONFIG_enum
-{
-	MUX_CONFIG_NONE = 0,
-	MUX_CONFIG_SCI_A_ENGINE,
-	MUX_CONFIG_SCI_A_TRANS,
-	MUX_CONFIG_SCI_B_ENGINE,
-	MUX_CONFIG_SCI_B_TRANS,
-	MUX_CONFIG_ISO9141
-} MUX_CONFIG_t;
-
 #define PIN_SCI_A_ENGINE_RX_EN	PIN0_bm // PORT B, active high
 #define PIN_SCI_B_ENGINE_RX_EN	PIN1_bm // PORT B, active high
 #define PIN_SCI_A_TRANS_RX_EN	PIN2_bm // PORT B, active high

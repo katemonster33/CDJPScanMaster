@@ -33,6 +33,13 @@ void sci_setup_hi_speed(void)
 
 void sci_do_tasks(struct byte_buffer *readBuffer, struct byte_buffer *txBuffer)
 {
+	if(txBuffer->idxLast > 0)
+	{
+		memcpy(send_buff, txBuffer->bytes, txBuffer->idxLast);
+		send_buff_len = txBuffer->idxLast;
+		send_cur_index = 0;
+		txBuffer->idxLast = 0;
+	}
 	if(UART_SCI.STATUS & USART_RXCIF_bm)
 	{
 		recv_buff[recv_buff_len] = UART_SCI.DATA;

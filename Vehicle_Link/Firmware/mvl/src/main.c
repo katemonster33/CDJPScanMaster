@@ -13,6 +13,7 @@
 
 #define PAYLOAD_FLAG 0x80
 
+#define CMD_NOOP				0
 #define CMD_SET_MUX_SCIAE		1
 #define CMD_SET_MUX_SCIAT		2
 #define CMD_SET_MUX_SCIBE		3
@@ -23,9 +24,15 @@
 #define CMD_ISO9141_5BAUDINIT	8
 #define CMD_ISO9141_FASTINIT	9
 
+#define PAYLOAD_PROTOCOL_J1850		1
+#define PAYLOAD_PROTOCOL_CCD		53
+#define PAYLOAD_PROTOCOL_SCI		60
+#define PAYLOAD_PROTOCOL_ISO9141	155
+
 static volatile bool main_b_cdc_enable = false;
 
 void usb_setup_rx_buffer(struct byte_buffer *usbBuffer, struct byte_buffer *srcBuffer, uint8_t protocol);
+void usb_setup_tx_buffer(struct byte_buffer *usbBuffer, struct byte_buffer *txBuffer);
 
 void usart_setup(USART_t* usart, int8_t bscale, uint16_t bsel)
 {
@@ -45,34 +52,31 @@ void byte_buffer_putchar(struct byte_buffer *buffer, uint8_t ch)
 	buffer->idxLast++;
 }
 
-void set_mux_config(MUX_CONFIG_t config)
+void set_mux_config(uint8_t cmd)
 {
 	PORTB.OUTCLR = (PIN_SCI_A_ENGINE_RX_EN | PIN_SCI_B_ENGINE_RX_EN | PIN_SCI_A_TRANS_RX_EN | PIN_SCI_B_TRANS_RX_EN);
 	
 	PORTE.OUTSET = PIN_SCI_A_TX_EN;
 	
 	PORTD.OUTSET =  PIN_ISO_K_EN ;
-	switch(config)
+	switch(cmd)
 	{
-		case MUX_CONFIG_SCI_A_ENGINE:
+		case CMD_SET_MUX_SCIAE:
 			PORTB.OUTSET = PIN_SCI_A_ENGINE_RX_EN;
 			PORTE.OUTCLR = PIN_SCI_A_TX_EN;
 			break;
-		case MUX_CONFIG_SCI_A_TRANS:
+		case CMD_SET_MUX_SCIAT:
 			PORTB.OUTSET = PIN_SCI_A_TRANS_RX_EN;
 			PORTE.OUTCLR = PIN_SCI_A_TX_EN;
 			break;
-		case MUX_CONFIG_SCI_B_ENGINE:
+		case CMD_SET_MUX_SCIBE:
 			PORTB.OUTSET = PIN_SCI_B_ENGINE_RX_EN;
 			break;
-		case MUX_CONFIG_SCI_B_TRANS:
+		case CMD_SET_MUX_SCIBT:
 			PORTB.OUTSET = PIN_SCI_B_TRANS_RX_EN;
 			break;
-		case MUX_CONFIG_ISO9141:
+		case CMD_SET_MUX_9141:
 			PORTD.OUTCLR = PIN_ISO_K_EN;
-			break;
-		case MUX_CONFIG_NONE:
-		default:
 			break;
 	}
 }
@@ -93,29 +97,31 @@ int main (void)
 	PORTE.DIRSET = PIN_SCI_A_TX_EN;
 	PORTR.DIRSET |= PIN0_bm | PIN1_bm;
 	PORTR.OUTSET |= PIN0_bm;
-	set_mux_config(MUX_CONFIG_NONE); // reset all enable pins to default values
+	set_mux_config(CMD_NOOP); // reset all enable pins to default values
 	
 	sci_setup_lo_speed();
 	j1850vpw_setup();
 	iso9141_setup();
 	ccd_setup();
 	struct byte_buffer pendingRxJ1850, pendingRxIso9141, pendingRxCcd, pendingRxSci;
+	struct byte_buffer pendingTxJ1850, pendingTxIso9141, pendingTxCcd, pendingTxSci;
+	pendingTxJ1850.idxLast = pendingTxIso9141.idxLast = pendingTxCcd.idxLast = pendingTxSci.idxLast = 0;
 	struct byte_buffer pendingTxUsb, pendingRxUsb;
 	pendingTxUsb.idxLast = pendingRxUsb.idxLast = 0;
 	while(1)
 	{
 		pendingRxJ1850.idxLast = pendingRxIso9141.idxLast = pendingRxCcd.idxLast = pendingRxSci.idxLast = 0;
-		j1850vpw_do_tasks(&pendingRxJ1850, 0);
-		iso9141_do_tasks(&pendingRxIso9141, 0);
-		ccd_do_tasks(&pendingRxCcd, 0);
-		sci_do_tasks(&pendingRxSci, 0);
+		j1850vpw_do_tasks(&pendingRxJ1850, &pendingTxJ1850);
+		iso9141_do_tasks(&pendingRxIso9141, &pendingTxIso9141);
+		ccd_do_tasks(&pendingRxCcd, &pendingTxCcd);
+		sci_do_tasks(&pendingRxSci, &pendingTxSci);
 		// if we aren't currently sending anything via USB, check the protocol buffers for something to send.
 		if(pendingTxUsb.idxLast == 0)
 		{
-			if(pendingRxJ1850.idxLast != 0)			usb_setup_rx_buffer(&pendingTxUsb, &pendingRxJ1850, 0);
-			else if(pendingRxIso9141.idxLast != 0)	usb_setup_rx_buffer(&pendingTxUsb, &pendingRxIso9141, 1);
-			else if(pendingRxCcd.idxLast != 0)		usb_setup_rx_buffer(&pendingTxUsb, &pendingRxCcd, 2);
-			else if(pendingRxSci.idxLast != 0)		usb_setup_rx_buffer(&pendingTxUsb, &pendingRxSci, 3);
+			if(pendingRxJ1850.idxLast != 0)			usb_setup_rx_buffer(&pendingTxUsb, &pendingRxJ1850, PAYLOAD_PROTOCOL_J1850);
+			else if(pendingRxIso9141.idxLast != 0)	usb_setup_rx_buffer(&pendingTxUsb, &pendingRxIso9141, PAYLOAD_PROTOCOL_ISO9141);
+			else if(pendingRxCcd.idxLast != 0)		usb_setup_rx_buffer(&pendingTxUsb, &pendingRxCcd, PAYLOAD_PROTOCOL_CCD);
+			else if(pendingRxSci.idxLast != 0)		usb_setup_rx_buffer(&pendingTxUsb, &pendingRxSci, PAYLOAD_PROTOCOL_SCI);
 		}
 		if(pendingRxUsb.idxLast != 0)
 		{
@@ -147,6 +153,13 @@ int main (void)
 			}
 			else if(pendingRxUsb.idxLast == ((pendingRxUsb.bytes[0] & 0x7F) + 1))
 			{
+				if(pendingRxUsb.idxLast > 2)
+				{
+					if(pendingRxUsb.bytes[1] == PAYLOAD_PROTOCOL_J1850) usb_setup_tx_buffer(&pendingRxUsb, &pendingTxJ1850);
+					else if(pendingRxUsb.bytes[1] == PAYLOAD_PROTOCOL_ISO9141) usb_setup_tx_buffer(&pendingRxUsb, &pendingTxIso9141);
+					else if(pendingRxUsb.bytes[1] == PAYLOAD_PROTOCOL_CCD) usb_setup_tx_buffer(&pendingRxUsb, &pendingTxCcd);
+					else if(pendingRxUsb.bytes[1] == PAYLOAD_PROTOCOL_SCI) usb_setup_tx_buffer(&pendingRxUsb, &pendingTxSci);
+				}
 				pendingRxUsb.idxLast = 0;
 			}
 		}
@@ -164,6 +177,13 @@ int main (void)
 		}
 		sleepmgr_enter_sleep();
 	}
+}
+
+void usb_setup_tx_buffer(struct byte_buffer *usbBuffer, struct byte_buffer *txBuffer)
+{
+	memcpy(txBuffer->bytes, usbBuffer->bytes + 2, usbBuffer->idxLast - 2);
+	txBuffer->idxLast = usbBuffer->idxLast - 2;
+	txBuffer->idxCurr = 0;
 }
 
 void usb_setup_rx_buffer(struct byte_buffer *usbBuffer, struct byte_buffer *srcBuffer, uint8_t protocol)

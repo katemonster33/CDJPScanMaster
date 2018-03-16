@@ -83,7 +83,7 @@ void iso9141_do_tasks(struct byte_buffer *readBuffer, struct byte_buffer *txBuff
 	}
 	if(UART_ISO9141.STATUS & USART_RXCIF_bm)
 	{
-		//uint8_t rxByte = UART_ISO9141.DATA;
+		uint8_t rxByte = UART_ISO9141.DATA;
 	}
 }
 
