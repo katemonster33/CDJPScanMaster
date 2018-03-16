@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="8.4.3">
+<eagle version="8.7.0">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -15771,7 +15771,7 @@ Source: http://www.murata.com .. GRM43DR72E224KW01.pdf</description>
 <part name="P12" library="pinhead" library_urn="urn:adsk.eagle:library:325" deviceset="PINHD-1X1" device="" package3d_urn="urn:adsk.eagle:package:22485/1"/>
 <part name="Q7" library="customics" deviceset="NDC7002N" device=""/>
 <part name="Q8" library="customics" deviceset="NDC7002N" device=""/>
-<part name="RN3" library="resistor-net" library_urn="urn:adsk.eagle:library:343" deviceset="CTS742C083" device="" package3d_urn="urn:adsk.eagle:package:24985/1" value="1K"/>
+<part name="RN3" library="resistor-net" library_urn="urn:adsk.eagle:library:343" deviceset="CTS742C083" device="" package3d_urn="urn:adsk.eagle:package:24985/1" value="100k"/>
 <part name="GND37" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="+3V9" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+3V3" device=""/>
 <part name="+3V10" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+3V3" device=""/>
