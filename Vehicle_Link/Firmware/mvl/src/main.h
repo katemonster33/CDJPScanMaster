@@ -11,7 +11,7 @@
 #include "definitions.h"
 #include "asf.h"
 
-void usart_setup(USART_t *usart,int8_t bscale, uint16_t bsel);
+void usart_setup(USART_t *usart, uint32_t baud);
 void set_mux_config(uint8_t cmd);
 void byte_buffer_putchar(struct byte_buffer *buffer, uint8_t ch);
 

@@ -19,16 +19,18 @@ bool inHighSpeedMode = false;
 
 void sci_setup_lo_speed(void)
 {
+	PORTE.PIN2CTRL = PORT_OPC_PULLUP_gc;
 	usart_tx_disable(&UART_SCI);
 	usart_rx_disable(&UART_SCI);
-	usart_setup(&UART_SCI, BAUD_7812_BSCALE, BAUD_7812_BSEL);
+	usart_setup(&UART_SCI, 7812);
 }
 
 void sci_setup_hi_speed(void)
 {
+	PORTE.PIN6CTRL = PORT_OPC_PULLUP_gc;
 	usart_tx_disable(&UART_SCI);
 	usart_rx_disable(&UART_SCI);
-	usart_setup(&UART_SCI, BAUD_62500_BSCALE, BAUD_62500_BSEL);
+	usart_setup(&UART_SCI, 62500);
 }
 
 void sci_do_tasks(struct byte_buffer *readBuffer, struct byte_buffer *txBuffer)
@@ -63,6 +65,7 @@ void sci_do_tasks(struct byte_buffer *readBuffer, struct byte_buffer *txBuffer)
 				memcpy(readBuffer->bytes, recv_buff, recv_buff_len);
 				readBuffer->idxCurr = 0;
 				readBuffer->idxLast = recv_buff_len;
+				recv_buff_len = 0;
 			}
 		}
 		else
@@ -72,6 +75,7 @@ void sci_do_tasks(struct byte_buffer *readBuffer, struct byte_buffer *txBuffer)
 			memcpy(readBuffer->bytes, recv_buff, recv_buff_len);
 			readBuffer->idxCurr = 0;
 			readBuffer->idxLast = recv_buff_len;
+			recv_buff_len = 0;
 		}
 	}
 	if(send_cur_index == 0)

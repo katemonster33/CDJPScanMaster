@@ -25,7 +25,7 @@
 #define PIN_SCI_TX				PIN3_bm // PORT E
 
 #define BAUD_7812_BSCALE	0
-#define BAUD_7812_BSEL		255
+#define BAUD_7812_BSEL		383
 #define BAUD_62500_BSCALE	0
 #define BAUD_62500_BSEL		31
 

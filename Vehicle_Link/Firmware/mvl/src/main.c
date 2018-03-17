@@ -34,13 +34,12 @@ static volatile bool main_b_cdc_enable = false;
 void usb_setup_rx_buffer(struct byte_buffer *usbBuffer, struct byte_buffer *srcBuffer, uint8_t protocol);
 void usb_setup_tx_buffer(struct byte_buffer *usbBuffer, struct byte_buffer *txBuffer);
 
-void usart_setup(USART_t* usart, int8_t bscale, uint16_t bsel)
+void usart_setup(USART_t* usart, uint32_t baud)
 {
 	sysclk_enable_peripheral_clock(usart);
 	usart_set_mode(usart, USART_CMODE_ASYNCHRONOUS_gc);
 	usart_format_set(usart, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc, false);
-	usart->BAUDCTRLA = (bscale << 4) | ((bsel >> 8) & 0x0F);
-	usart->BAUDCTRLB = (uint8_t)bsel;
+	usart_set_baudrate(usart, baud, sysclk_get_per_hz());
 	usart_tx_enable(usart);
 	usart_rx_enable(usart);
 }

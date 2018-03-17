@@ -44,7 +44,7 @@ void iso9141_setup()
 	iso9141_rx_buffer.idxCurr = iso9141_rx_buffer.idxLast = 0;
 	iso9141_tx_buffer.idxCurr = iso9141_tx_buffer.idxLast = 0;
 	PORTD.DIRSET |= PIN_ISO9141_TX;
-	usart_setup(&UART_ISO9141, BAUD_10400_BSCALE, BAUD_10400_BSEL);
+	usart_setup(&UART_ISO9141, 10400);
 }
 
 void iso9141_do_tasks(struct byte_buffer *readBuffer, struct byte_buffer *txBuffer)
