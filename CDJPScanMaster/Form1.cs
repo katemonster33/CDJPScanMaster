@@ -108,13 +108,16 @@ namespace ScanMaster.UI
         }
 
         void TryConnect(ModuleType type)
-        {
-            Module module = vlm.ScanModuleType(type);
-            if (module != null)
-            {
-                LoadModule(module);
-            }
-        }
+		{
+			try {
+				Module module = vlm.ScanModuleType (type);
+				if (module != null) {
+					LoadModule (module);
+				}
+			} catch (Exception e) {
+				MessageBox.Show (e.Message);
+			}
+		}
 
         private void lstDataMenus_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -148,27 +151,23 @@ namespace ScanMaster.UI
         }
         
         void ConnectThread(string comPort)
-        {
-            progressBar1.InvokeIfRequired(() =>
-            {
-                progressBar1.Enabled = true;
-                progressBar1.Visible = true;
-            });
-            lblProgress.InvokeIfRequired(() => lblProgress.Text = "Connecting...");
-            progressBar1.InvokeIfRequired(() =>
-            {
-                progressBar1.Enabled = false;
-                progressBar1.Visible = false;
-            });
-            if (!vlm.OpenComms(comPort))
-            {
-                lblProgress.InvokeIfRequired(() => lblProgress.Text = "Failed to connect to Arduino.");
-            }
-            else
-            {
-                pnlScanMenu.InvokeIfRequired(() => pnlScanMenu.Visible = false);
-            }
-        }
+		{
+			progressBar1.InvokeIfRequired (() => {
+				progressBar1.Enabled = true;
+				progressBar1.Visible = true;
+			});
+			lblProgress.InvokeIfRequired (() => lblProgress.Text = "Connecting...");
+			progressBar1.InvokeIfRequired (() => {
+				progressBar1.Enabled = false;
+				progressBar1.Visible = false;
+			});
+			try {
+				vlm.OpenComms (comPort);
+				pnlScanMenu.InvokeIfRequired (() => pnlScanMenu.Visible = false);
+			} catch (Exception e) {
+				MessageBox.Show("Failed to connect to Arduino. Got exception:\n" + e.ToString());
+			}
+		}
 
         private void btnSendMsg_Click(object sender, EventArgs e)
         {
@@ -178,11 +177,12 @@ namespace ScanMaster.UI
             {
                 messageBytes.Add(Convert.ToByte(tok, 16));
             }
-            //vlm.SendMessage(messageBytes);
+			vlm.SendMessage(Protocol.SCI, messageBytes);
         }
 
         private void btnSetMux_Click(object sender, EventArgs e)
         {
+			vlm.SendCommand ((CommandID)(cmbMuxSel.SelectedIndex == -1 ? 0 : cmbMuxSel.SelectedIndex));
             //vlm.ConnectChannel(chan);
         }
     }

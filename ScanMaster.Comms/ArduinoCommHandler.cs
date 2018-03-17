@@ -129,26 +129,23 @@ namespace ScanMaster.Comms
         }
 
         public void SendCommand(CommandID cmd)
-        {
-            arduino.Write(new byte[] { (byte)cmd }, 0, 1);
-            responseReceived.Reset();
-            responseReceived.WaitOne(100);
-            commsLogWriter.WriteLine(string.Format("(TX) {0:X2}", cmd));
-        }
+		{
+			arduino.Write (new byte[] { (byte)cmd }, 0, 1);
+			responseReceived.Reset ();
+			responseReceived.WaitOne (100);
+			try {
+				commsLogWriter.WriteLine ("(TX) " + cmd.ToString());
+			} catch (Exception e) {
+				Console.WriteLine ("Boned." + e.ToString());
+			}
+		}
 
         public static ArduinoCommHandler CreateCommHandler(string portName)
         {
             SerialPort serial = new SerialPort(portName, 115200, Parity.None, 8, StopBits.One);
             serial.DtrEnable = true;
             serial.RtsEnable = true;
-            try
-            {
-                serial.Open();
-            }
-            catch(IOException)
-            {
-                return null;
-            }
+            serial.Open();
             return new ArduinoCommHandler(serial);
         }
         

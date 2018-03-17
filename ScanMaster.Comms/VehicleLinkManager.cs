@@ -113,6 +113,16 @@ namespace ScanMaster.Comms
             }
         }
 
+		public void SendCommand(CommandID cmd)
+		{
+			arduino.SendCommand (cmd);
+		}
+
+		public void SendMessage(Protocol p, List<byte> bytes)
+		{
+			arduino.SendMessageAndGetResponse (p, bytes.ToArray ());
+		}
+
         public Module ScanModuleType(ModuleType moduleToConnect)
         {
             string year = string.Empty, bodyStyle = string.Empty;
