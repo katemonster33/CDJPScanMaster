@@ -98,7 +98,7 @@ int main (void)
 	PORTR.OUTSET |= PIN0_bm;
 	set_mux_config(CMD_NOOP); // reset all enable pins to default values
 	
-	sci_setup_lo_speed();
+	sci_setup();
 	j1850vpw_setup();
 	iso9141_setup();
 	ccd_setup();
@@ -136,10 +136,10 @@ int main (void)
 						set_mux_config(pendingRxUsb.bytes[0]);
 						break;
 					case CMD_SET_SCI_HISPEED:
-						sci_setup_hi_speed();
+						sci_hi_speed();
 						break;
 					case CMD_SET_SCI_LOSPEED:
-						sci_setup_lo_speed();
+						sci_lo_speed();
 						break;
 					case CMD_ISO9141_5BAUDINIT:
 						// TO DO

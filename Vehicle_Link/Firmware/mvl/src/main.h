@@ -25,8 +25,9 @@ void iso9141_start_five_baud_init(uint8_t initByte);
 void ccd_setup(void);
 void ccd_do_tasks(struct byte_buffer *readBuffer, struct byte_buffer *txBuffer);
 
-void sci_setup_lo_speed(void);
-void sci_setup_hi_speed(void);
+void sci_setup(void);
+void sci_lo_speed(void);
+void sci_hi_speed(void);
 void sci_do_tasks(struct byte_buffer *readBuffer, struct byte_buffer *txBuffer);
 
 #endif // _MAIN_H_
