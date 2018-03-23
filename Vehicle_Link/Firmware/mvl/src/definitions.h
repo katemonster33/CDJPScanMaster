@@ -10,6 +10,11 @@
 #define DEFINITIONS_H_
 #include <stdint.h>
 
+#define PAYLOAD_PROTOCOL_J1850		1
+#define PAYLOAD_PROTOCOL_CCD		53
+#define PAYLOAD_PROTOCOL_SCI		60
+#define PAYLOAD_PROTOCOL_ISO9141	155
+
 #define PIN_SCI_A_ENGINE_RX_EN	PIN0_bm // PORT B, active high
 #define PIN_SCI_B_ENGINE_RX_EN	PIN1_bm // PORT B, active high
 #define PIN_SCI_A_TRANS_RX_EN	PIN2_bm // PORT B, active high
@@ -29,7 +34,7 @@
 #define BAUD_62500_BSCALE	0
 #define BAUD_62500_BSEL		31
 
-#define BYTE_BUFFER_SIZE	64
+#define BYTE_BUFFER_SIZE	127
 struct byte_buffer
 {
 	uint8_t bytes[BYTE_BUFFER_SIZE];

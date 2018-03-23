@@ -38,7 +38,8 @@ uint8_t j1850vpw_calc_crc(uint8_t *buffer, uint8_t len);
 bool transmitActive = false;
 uint8_t currentBit = 0;
 
-struct byte_buffer j1850_rx_buffer;
+uint8_t j1850_rx_buffer[64];
+uint8_t j1850_rx_buffer_len = 0;
 //struct byte_buffer j1850_tx_buffer;
 
 bool lastJ1850State = false; // false = inactive, true = active
@@ -49,7 +50,7 @@ void j1850vpw_setup(void)
 	PORTD.DIRSET |= PIN_J1850VPW_TX;
 }
 
-void j1850vpw_do_tasks(struct byte_buffer *readBuffer, struct byte_buffer *txBuffer)
+void j1850vpw_do_tasks(struct byte_buffer *txBuffer)
 {
 	bool currentJ1850State = (PORTD.IN & PIN_J1850VPW_RX) != 0;
 	if(rxInProgress == false)
@@ -84,13 +85,13 @@ void j1850vpw_do_tasks(struct byte_buffer *readBuffer, struct byte_buffer *txBuf
 		else if(TIMER_J1850VPW.CNT > RX_EOF_MIN)
 		{
 			rxInProgress = false;
-			uint8_t crc = j1850vpw_calc_crc(j1850_rx_buffer.bytes, j1850_rx_buffer.idxLast - 1);
-			if(crc == j1850_rx_buffer.bytes[j1850_rx_buffer.idxLast - 1] && readBuffer != NULL)
+			uint8_t crc = j1850vpw_calc_crc(j1850_rx_buffer, j1850_rx_buffer_len - 1);
+			if(crc == j1850_rx_buffer[j1850_rx_buffer_len - 1])
 			{
-				j1850_rx_buffer.idxLast--;
-				memcpy(readBuffer, &j1850_rx_buffer, sizeof(struct byte_buffer));
+				j1850_rx_buffer_len--;
+				usb_queue_rx(j1850_rx_buffer, j1850_rx_buffer_len, PAYLOAD_PROTOCOL_J1850);
 			}
-			j1850_rx_buffer.idxLast = 0;
+			j1850_rx_buffer_len = 0;
 		}
 	}
 
@@ -100,12 +101,12 @@ void j1850vpw_do_tasks(struct byte_buffer *readBuffer, struct byte_buffer *txBuf
 
 void j1850_rx_push_bit(bool highBit)
 {
-	if(highBit) j1850_rx_buffer.bytes[j1850_rx_buffer.idxCurr] |= (1 << currentBit);
+	if(highBit) j1850_rx_buffer[j1850_rx_buffer_len] |= (1 << currentBit);
 	if(currentBit < 7) currentBit++;
 	else
 	{
 		currentBit = 0;
-		j1850_rx_buffer.idxLast++;
+		j1850_rx_buffer_len++;
 	}
 }
 

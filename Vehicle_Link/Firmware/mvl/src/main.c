@@ -24,15 +24,10 @@
 #define CMD_ISO9141_5BAUDINIT	8
 #define CMD_ISO9141_FASTINIT	9
 
-#define PAYLOAD_PROTOCOL_J1850		1
-#define PAYLOAD_PROTOCOL_CCD		53
-#define PAYLOAD_PROTOCOL_SCI		60
-#define PAYLOAD_PROTOCOL_ISO9141	155
-
 static volatile bool main_b_cdc_enable = false;
 
-void usb_setup_rx_buffer(struct byte_buffer *usbBuffer, struct byte_buffer *srcBuffer, uint8_t protocol);
 void usb_setup_tx_buffer(struct byte_buffer *usbBuffer, struct byte_buffer *txBuffer);
+uint8_t *usb_rx_get_next(uint8_t *ptr);
 
 void usart_setup(USART_t* usart, uint32_t baud)
 {
@@ -40,15 +35,20 @@ void usart_setup(USART_t* usart, uint32_t baud)
 	usart_set_mode(usart, USART_CMODE_ASYNCHRONOUS_gc);
 	usart_format_set(usart, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc, false);
 	usart_set_baudrate(usart, baud, sysclk_get_per_hz());
+	usart_set_rx_interrupt_level(usart, USART_INT_LVL_LO);
 	usart_tx_enable(usart);
 	usart_rx_enable(usart);
 }
 
-void byte_buffer_putchar(struct byte_buffer *buffer, uint8_t ch)
+uint8_t usb_rx_ring_buffer[1024];
+uint16_t usb_rx_buffer_fill_size = 0;
+uint8_t *usb_rx_begin = usb_rx_ring_buffer, *usb_rx_last = usb_rx_ring_buffer;
+
+
+uint8_t *usb_rx_get_next(uint8_t *ptr)
 {
-	if(buffer->idxLast >= BYTE_BUFFER_SIZE) return;
-	buffer->bytes[buffer->idxLast] = ch;
-	buffer->idxLast++;
+	if(ptr == (usb_rx_ring_buffer + 1024)) return usb_rx_ring_buffer;
+	else return (ptr + 1);
 }
 
 void set_mux_config(uint8_t cmd)
@@ -98,30 +98,23 @@ int main (void)
 	PORTR.OUTSET |= PIN0_bm;
 	set_mux_config(CMD_NOOP); // reset all enable pins to default values
 	
+	// globally enable low-level interrupts in the PMIC.
+	PMIC.CTRL = PMIC_LOLVLEN_bm;
 	sci_setup();
 	j1850vpw_setup();
 	iso9141_setup();
 	ccd_setup();
-	struct byte_buffer pendingRxJ1850, pendingRxIso9141, pendingRxCcd, pendingRxSci;
+	sei();
 	struct byte_buffer pendingTxJ1850, pendingTxIso9141, pendingTxCcd, pendingTxSci;
 	pendingTxJ1850.idxLast = pendingTxIso9141.idxLast = pendingTxCcd.idxLast = pendingTxSci.idxLast = 0;
 	struct byte_buffer pendingTxUsb, pendingRxUsb;
-	pendingTxUsb.idxLast = pendingRxUsb.idxLast = 0;
+	pendingTxUsb.idxLast = pendingTxUsb.idxCurr = pendingRxUsb.idxLast = 0;
 	while(1)
 	{
-		pendingRxJ1850.idxLast = pendingRxIso9141.idxLast = pendingRxCcd.idxLast = pendingRxSci.idxLast = 0;
-		j1850vpw_do_tasks(&pendingRxJ1850, &pendingTxJ1850);
-		iso9141_do_tasks(&pendingRxIso9141, &pendingTxIso9141);
-		ccd_do_tasks(&pendingRxCcd, &pendingTxCcd);
-		sci_do_tasks(&pendingRxSci, &pendingTxSci);
-		// if we aren't currently sending anything via USB, check the protocol buffers for something to send.
-		if(pendingTxUsb.idxLast == 0)
-		{
-			if(pendingRxJ1850.idxLast != 0)			usb_setup_rx_buffer(&pendingTxUsb, &pendingRxJ1850, PAYLOAD_PROTOCOL_J1850);
-			else if(pendingRxIso9141.idxLast != 0)	usb_setup_rx_buffer(&pendingTxUsb, &pendingRxIso9141, PAYLOAD_PROTOCOL_ISO9141);
-			else if(pendingRxCcd.idxLast != 0)		usb_setup_rx_buffer(&pendingTxUsb, &pendingRxCcd, PAYLOAD_PROTOCOL_CCD);
-			else if(pendingRxSci.idxLast != 0)		usb_setup_rx_buffer(&pendingTxUsb, &pendingRxSci, PAYLOAD_PROTOCOL_SCI);
-		}
+		j1850vpw_do_tasks(&pendingTxJ1850);
+		iso9141_do_tasks(&pendingTxIso9141);
+		ccd_do_tasks(&pendingTxCcd);
+		sci_do_tasks(&pendingTxSci);
 		if(pendingRxUsb.idxLast != 0)
 		{
 			if((pendingRxUsb.bytes[0] & 0x80) == 0) // not a payload request, 1-byte command
@@ -162,12 +155,12 @@ int main (void)
 				pendingRxUsb.idxLast = 0;
 			}
 		}
-		if(udi_cdc_is_tx_ready() && pendingTxUsb.idxLast != 0)
+		if(udi_cdc_is_tx_ready() && usb_rx_begin != usb_rx_last)
 		{
-			udi_cdc_putc(pendingTxUsb.bytes[pendingTxUsb.idxCurr]);
-			pendingTxUsb.idxCurr++;
+			udi_cdc_putc(*usb_rx_begin);
 			// set idxLast to zero, this indicates buffer empty
-			if(pendingTxUsb.idxCurr >= pendingTxUsb.idxLast) pendingTxUsb.idxLast = 0;
+			usb_rx_begin = usb_rx_get_next(usb_rx_begin);
+			usb_rx_buffer_fill_size--;
 		}
 		if(udi_cdc_is_rx_ready())
 		{
@@ -185,12 +178,23 @@ void usb_setup_tx_buffer(struct byte_buffer *usbBuffer, struct byte_buffer *txBu
 	txBuffer->idxCurr = 0;
 }
 
-void usb_setup_rx_buffer(struct byte_buffer *usbBuffer, struct byte_buffer *srcBuffer, uint8_t protocol)
+void usb_queue_rx(uint8_t *srcBuffer, uint8_t srcBufferLen, uint8_t protocol)
 {
-	usbBuffer->idxLast = srcBuffer->idxLast + 2;
-	usbBuffer->idxCurr = 0;
 	// set highest bit to indicate payload message, lower 7 bits is message length
-	usbBuffer->bytes[0] = 0x80 | (srcBuffer->idxLast + 1);
-	usbBuffer->bytes[1] = protocol;
-	memcpy(usbBuffer->bytes + 2, srcBuffer->bytes, srcBuffer->idxLast);
+	if(srcBufferLen + usb_rx_buffer_fill_size > 1024)
+	{
+		// buffer overflow
+		usb_rx_begin = usb_rx_last;
+		usb_rx_buffer_fill_size = 0;
+	}
+	*usb_rx_last = 0x80 | (srcBufferLen + 1);
+	usb_rx_last = usb_rx_get_next(usb_rx_last);
+	*usb_rx_last = protocol;
+	usb_rx_last = usb_rx_get_next(usb_rx_last);
+	for(uint8_t index = 0; index < srcBufferLen; index++)
+	{
+		*usb_rx_last = srcBuffer[index];
+		usb_rx_last = usb_rx_get_next(usb_rx_last);
+	}
+	usb_rx_buffer_fill_size += srcBufferLen;
 }
