@@ -29,9 +29,9 @@ namespace ScanMaster.Comms
             return database;
         }
 
-        public bool OpenComms(string serialPort)
+        public bool OpenComms(string serialPort, LogWriter logger)
         {
-            arduino = ArduinoCommHandler.CreateCommHandler(serialPort);
+            arduino = ArduinoCommHandler.CreateCommHandler(serialPort, logger);
             if (arduino == null) return false;
             if (!arduino.EstablishComms())
             {
@@ -55,6 +55,32 @@ namespace ScanMaster.Comms
             }
         }
 
+        public void SCIHiSpeedQuery(List<TXItem> sciItems)
+        {
+            List<int> queryItemOffset = new List<int>();
+            byte currentTableId = 0x00;
+            List<byte> totalMessage = new List<byte>();
+            foreach(TXItem tx in sciItems.OrderBy(tt => tt.TransmitBytes[0]))
+            {
+                if(tx.TransmitBytes[0] != currentTableId)
+                {
+                    totalMessage.Add(tx.TransmitBytes[0]);
+                }
+                queryItemOffset.Add(tx.DataAcquisitionMethod.ExtractOffset + totalMessage.Count - 1);
+                totalMessage.AddRange(tx.TransmitBytes.Skip(1).Take(tx.DataAcquisitionMethod.RequestLen - 1));
+            }
+            List<byte> totalResponse = arduino.SendMessageAndGetResponse(Protocol.SCI, totalMessage.ToArray());
+            if(totalResponse.Count == totalMessage.Count)
+            {
+                byte[] rawBytes = totalMessage.ToArray();
+                for (int i = 0; i < sciItems.Count; i++)
+                {
+                    byte[] dataBytes = sciItems[i].DataAcquisitionMethod.ExtractData(rawBytes, queryItemOffset[i]);
+                    sciItems[i].DataDisplay.RawData = dataBytes;
+                }
+            }
+        }
+
         List<TXItem> visibleTxItems = new List<TXItem>();
         void QueryThread()
         {
@@ -63,31 +89,50 @@ namespace ScanMaster.Comms
             bool isHighSpeedSciMode = false;
             while (!queryTaskStopSignal.WaitOne(1))
             {
-                for (int i = 0; i < visibleTxItems.Count; i++)
+                List<TXItem> txTemp = null;
+                lock(visibleTxItems)
                 {
-                    TXItem tx = visibleTxItems[i];
-                    if (tx.TransmitBytes.Length == 0 || tx.DataAcquisitionMethod == null || (tx.TransmitBytes.Length == 1 && tx.TransmitBytes[0] == 0)) continue;
-                    else if (tx.DataAcquisitionMethod == null) continue;
-                    if (tx.DataAcquisitionMethod.Protocol == Protocol.SCI)
+                    txTemp = new List<TXItem>(visibleTxItems);
+                }
+                List<TXItem> sciHighSpeedParams = txTemp.Where(tx => tx.DataAcquisitionMethod != null && tx.DataAcquisitionMethod.Protocol == Protocol.SCI && (tx.TransmitBytes[0] & 0xF0) == 0xF0).ToList();
+                if(sciHighSpeedParams.Any())
+                {
+                    txTemp = visibleTxItems.Except(sciHighSpeedParams).ToList();
+                    if (!isHighSpeedSciMode)
                     {
-                        if (!isHighSpeedSciMode && tx.TransmitBytes[0] >= 0xF0)
+                        arduino.SendCommand(CommandID.SCI_SetLoSpeed);
+                        if (arduino.SendMessageAndGetResponse(Protocol.SCI, 0x12).Count == 1)
                         {
-                            isHighSpeedSciMode = arduino.SendMessageAndGetResponse(Protocol.SCI, 0x12).Count == 1;
-                            Debug.Assert(isHighSpeedSciMode);
                             arduino.SendCommand(CommandID.SCI_SetHiSpeed);
-                            Thread.Sleep(50);
-                        }
-                        if (isHighSpeedSciMode && tx.TransmitBytes[0] < 0xF0)
-                        {
-                            arduino.SendMessageAndGetResponse(Protocol.SCI, 0xFE);
-                            Thread.Sleep(250);
-                            arduino.SendCommand(CommandID.SCI_SetLoSpeed);
-                            isHighSpeedSciMode = false;
+                            isHighSpeedSciMode = true;
                         }
                     }
+                    if (isHighSpeedSciMode)
+                    {
+                        SCIHiSpeedQuery(sciHighSpeedParams);
+                    }
+                    if (txTemp.Any())
+                    {
+                        arduino.SendMessageAndGetResponse(Protocol.SCI, 0xFE);
+                        Thread.Sleep(250);
+                        arduino.SendCommand(CommandID.SCI_SetLoSpeed);
+                        isHighSpeedSciMode = false;
+                    }
+                }
+                for (int i = 0; i < txTemp.Count; i++)
+                {
+                    TXItem tx = txTemp[i];
+                    if (tx.TransmitBytes.Length == 0 || tx.DataAcquisitionMethod == null || (tx.TransmitBytes.Length == 1 && tx.TransmitBytes[0] == 0)) continue;
+                    else if (tx.DataAcquisitionMethod == null) continue;
                     byte[] xmitTemp = new byte[tx.DataAcquisitionMethod.RequestLen];
                     Array.Copy(tx.TransmitBytes, xmitTemp, tx.DataAcquisitionMethod.RequestLen);
                     List<byte> response = arduino.SendMessageAndGetResponse(tx.DataAcquisitionMethod.Protocol, xmitTemp);
+                    if (tx.DataAcquisitionMethod.ResponseLen > tx.DataAcquisitionMethod.RequestLen && tx.DataAcquisitionMethod.Protocol == Protocol.SCI)
+                    {
+                        List<byte> additionalBytes;
+                        arduino.GetSCIBytes(tx.DataAcquisitionMethod.ResponseLen - tx.DataAcquisitionMethod.RequestLen, out additionalBytes);
+                        if (additionalBytes != null) response.AddRange(additionalBytes);
+                    }
                     if (response.Count == tx.DataAcquisitionMethod.ResponseLen)
                     {
                         byte[] dataBytes = tx.DataAcquisitionMethod.ExtractData(response.ToArray());

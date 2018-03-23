@@ -20,13 +20,13 @@ namespace ScanMaster.Comms
                 foreach(XmlNode enumItemNode in enumNode)
                 {
                     EnumItem ei = new EnumItem() { Name = enumItemNode.Attributes["Name"].Value };
-                    if(enumNode.Attributes["Value"] != null)
+                    if(enumItemNode.Attributes["Value"] != null)
                     {
-                        ei.Value = int.Parse(enumNode.Attributes["Value"].Value);
+                        ei.Value = int.Parse(enumItemNode.Attributes["Value"].Value);
                     }
-                    if (enumNode.Attributes["Bit"] != null)
+                    if (enumItemNode.Attributes["Bit"] != null)
                     {
-                        ei.Bit = int.Parse(enumNode.Attributes["Bit"].Value);
+                        ei.Bit = int.Parse(enumItemNode.Attributes["Bit"].Value);
                     }
                     en.Enums.Add(ei);
                 }

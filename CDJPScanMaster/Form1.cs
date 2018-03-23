@@ -135,7 +135,7 @@ namespace ScanMaster.UI
                     lstDataMenuTXs.Items.Add(newItem);
                 }
             });
-
+            vlm.SetQueriedTXItems(visibleTxItems);
         }
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
@@ -162,7 +162,7 @@ namespace ScanMaster.UI
 				progressBar1.Visible = false;
 			});
 			try {
-				vlm.OpenComms (comPort);
+				vlm.OpenComms (comPort, new TextBoxLogWriter(txtSerialLog));
 				pnlScanMenu.InvokeIfRequired (() => pnlScanMenu.Visible = false);
 			} catch (Exception e) {
 				MessageBox.Show("Failed to connect to Arduino. Got exception:\n" + e.ToString());

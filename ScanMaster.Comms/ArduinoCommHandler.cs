@@ -12,15 +12,16 @@ namespace ScanMaster.Comms
 {
     public class ArduinoCommHandler : IDisposable
     {
-        StreamWriter commsLogWriter = new StreamWriter("scanmastercomms.log");
+        LogWriter commsLogWriter;
         public bool Connected { get; private set; }
         public List<byte> ResponseBuffer { get; private set; }
         SerialPort arduino;
         Task readTask;
         ManualResetEvent responseReceived = new ManualResetEvent(false);
         Protocol currentMessageProtocol = Protocol.Invalid;
-        private ArduinoCommHandler(SerialPort arduino)
+        private ArduinoCommHandler(SerialPort arduino, LogWriter log)
         {
+            this.commsLogWriter = log;
             ResponseBuffer = new List<byte>();
             this.arduino = arduino;
             readTask = new Task(ReadThread);
@@ -45,7 +46,6 @@ namespace ScanMaster.Comms
             arduino.Dispose();
             readTask.Wait();
             readTask.Dispose();
-            commsLogWriter.Dispose();
         }
 
         public List<byte> SendMessageAndGetResponse(Protocol protocol, params byte[] message)
@@ -58,6 +58,19 @@ namespace ScanMaster.Comms
             ResponseBuffer.Clear();
             for (int retry = 0; retry < 3; retry++)
             {
+                if (!arduino.IsOpen)
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        Thread.Sleep(250);
+                        try
+                        {
+                            arduino.Open();
+                        }
+                        catch (Exception) { }
+                    }
+                    if (!arduino.IsOpen) throw new Exception();
+                }
                 arduino.Write(bytesForXmega.ToArray(), 0, bytesForXmega.Count);
                 string strLogMsg = "(TX) ";
                 foreach(byte by in bytesForXmega)
@@ -82,14 +95,23 @@ namespace ScanMaster.Comms
             return true;
         }
 
+        public bool GetSCIResp(out List<byte> bytes)
+        {
+            responseReceived.Reset();
+            bytes = null;
+            if (!responseReceived.WaitOne(150)) return false;
+            bytes = new List<byte>(ResponseBuffer);
+            return true;
+        }
+
         public bool GetSCIBytes(int count, out List<byte> sciBytes)
         {
             sciBytes = new List<byte>(count);
-            byte recdByteTemp = 0;
+            List<byte> bytes = new List<byte>();
             for (int i = 0; i < count; i++)
             {
-                if (!GetSCIByte(ref recdByteTemp)) return false;
-                sciBytes.Add(recdByteTemp);
+                if (!GetSCIResp(out bytes)) return false;
+                sciBytes.AddRange(bytes);
             }
             return true;
         }
@@ -140,13 +162,13 @@ namespace ScanMaster.Comms
 			}
 		}
 
-        public static ArduinoCommHandler CreateCommHandler(string portName)
+        public static ArduinoCommHandler CreateCommHandler(string portName, LogWriter logger)
         {
             SerialPort serial = new SerialPort(portName, 115200, Parity.None, 8, StopBits.One);
             serial.DtrEnable = true;
             serial.RtsEnable = true;
             serial.Open();
-            return new ArduinoCommHandler(serial);
+            return new ArduinoCommHandler(serial, logger);
         }
         
         void ReadThread()

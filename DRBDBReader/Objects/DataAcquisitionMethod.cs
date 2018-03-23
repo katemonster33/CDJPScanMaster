@@ -38,5 +38,12 @@ namespace ScanMaster.Database.Objects
             Buffer.BlockCopy(response, ExtractOffset, output, 0, ExtractLen);
             return output;
         }
+
+        public byte[] ExtractData(byte[] response, int subOffset)
+        {
+            byte[] output = new byte[ExtractLen];
+            Buffer.BlockCopy(response, subOffset, output, 0, ExtractLen);
+            return output;
+        }
     }
 }
