@@ -15,13 +15,13 @@
 #define PAYLOAD_PROTOCOL_SCI		60
 #define PAYLOAD_PROTOCOL_ISO9141	155
 
+#define RC_SUCCESS				64
+#define RC_FAIL					65
+
 #define PIN_SCI_A_ENGINE_RX_EN	PIN0_bm // PORT B, active high
 #define PIN_SCI_B_ENGINE_RX_EN	PIN1_bm // PORT B, active high
 #define PIN_SCI_A_TRANS_RX_EN	PIN2_bm // PORT B, active high
 #define PIN_SCI_B_TRANS_RX_EN	PIN3_bm // PORT B, active high
-
-#define PIN_CCD_RX				PIN2_bm // PORT C
-#define PIN_CCD_TX				PIN3_bm // PORT C
 
 #define PIN_ISO_K_EN			PIN5_bm // PORT D, active low
 

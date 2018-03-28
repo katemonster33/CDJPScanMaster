@@ -11,6 +11,7 @@
 #include "definitions.h"
 #include "asf.h"
 
+void usb_queue_cmd(uint8_t cmd);
 void usb_queue_rx(uint8_t *srcBuffer, uint8_t srcBufferLen, uint8_t protocol);
 
 void usart_setup(USART_t *usart, uint32_t baud);
@@ -22,7 +23,7 @@ void j1850vpw_do_tasks(struct byte_buffer *txBuffer);
 
 void iso9141_setup(void);
 void iso9141_do_tasks(struct byte_buffer *txBuffer);
-void iso9141_start_five_baud_init(uint8_t initByte);
+void iso9141_start_five_baud_init(void);
 
 void ccd_setup(void);
 void ccd_do_tasks(struct byte_buffer *txBuffer);

@@ -36,14 +36,12 @@ void usart_setup(USART_t* usart, uint32_t baud)
 	usart_format_set(usart, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc, false);
 	usart_set_baudrate(usart, baud, sysclk_get_per_hz());
 	usart_set_rx_interrupt_level(usart, USART_INT_LVL_LO);
-	usart_tx_enable(usart);
-	usart_rx_enable(usart);
+	usart->CTRLA = usart->CTRLA | USART_TXEN_bm | USART_RXEN_bm;
 }
 
 uint8_t usb_rx_ring_buffer[1024];
 uint16_t usb_rx_buffer_fill_size = 0;
 uint8_t *usb_rx_begin = usb_rx_ring_buffer, *usb_rx_last = usb_rx_ring_buffer;
-
 
 uint8_t *usb_rx_get_next(uint8_t *ptr)
 {
@@ -94,8 +92,8 @@ int main (void)
 	PORTB.DIRSET = PIN_SCI_A_ENGINE_RX_EN | PIN_SCI_B_ENGINE_RX_EN | PIN_SCI_A_TRANS_RX_EN | PIN_SCI_B_TRANS_RX_EN;
 	PORTD.DIRSET = PIN_ISO_K_EN;
 	PORTE.DIRSET = PIN_SCI_A_TX_EN;
-	PORTR.DIRSET |= PIN0_bm | PIN1_bm;
-	PORTR.OUTSET |= PIN0_bm;
+	PORTR.DIRSET |= PIN0_bm | PIN1_bm; // Power LED, Data LED
+	PORTR.OUTSET |= PIN0_bm; // Power LED ON
 	set_mux_config(CMD_NOOP); // reset all enable pins to default values
 	
 	// globally enable low-level interrupts in the PMIC.
@@ -127,15 +125,18 @@ int main (void)
 					case CMD_SET_MUX_SCIBT:
 					case CMD_SET_MUX_9141:
 						set_mux_config(pendingRxUsb.bytes[0]);
+						usb_queue_cmd(RC_SUCCESS);
 						break;
 					case CMD_SET_SCI_HISPEED:
 						sci_hi_speed();
+						usb_queue_cmd(RC_SUCCESS);
 						break;
 					case CMD_SET_SCI_LOSPEED:
 						sci_lo_speed();
+						usb_queue_cmd(RC_SUCCESS);
 						break;
 					case CMD_ISO9141_5BAUDINIT:
-						// TO DO
+						iso9141_start_five_baud_init();
 						break;
 					case CMD_ISO9141_FASTINIT:
 						// TO DO
@@ -176,6 +177,18 @@ void usb_setup_tx_buffer(struct byte_buffer *usbBuffer, struct byte_buffer *txBu
 	memcpy(txBuffer->bytes, usbBuffer->bytes + 2, usbBuffer->idxLast - 2);
 	txBuffer->idxLast = usbBuffer->idxLast - 2;
 	txBuffer->idxCurr = 0;
+}
+
+void usb_queue_cmd(uint8_t cmd)
+{
+	if((usb_rx_buffer_fill_size + 1) > 1024)
+	{
+		// buffer overflow
+		usb_rx_begin = usb_rx_last;
+		usb_rx_buffer_fill_size = 0;
+	}
+	*usb_rx_last = cmd;
+	usb_rx_last = usb_rx_get_next(usb_rx_last);
 }
 
 void usb_queue_rx(uint8_t *srcBuffer, uint8_t srcBufferLen, uint8_t protocol)

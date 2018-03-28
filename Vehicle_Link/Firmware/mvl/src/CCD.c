@@ -12,6 +12,9 @@
 #define CCD_IDLE_TIMER TCC0
 #define CCD_TX0_TIMER TCC1
 
+#define PIN_CCD_RX				PIN2_bm // PORT C
+#define PIN_CCD_TX				PIN3_bm // PORT C
+
 void ccd_idle_timer_stop(void);
 void ccd_idle_timer_start(void);
 void ccd_idle_timer_setup(void);
