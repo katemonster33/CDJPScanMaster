@@ -37,6 +37,12 @@
             this.txtSerialLog = new System.Windows.Forms.TextBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabModules = new System.Windows.Forms.TabPage();
+            this.pnlScanMenu = new System.Windows.Forms.Panel();
+            this.lblProgress = new System.Windows.Forms.Label();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.lblComPort = new System.Windows.Forms.Label();
+            this.btnConnectComPort = new System.Windows.Forms.Button();
+            this.cmbComPorts = new System.Windows.Forms.ComboBox();
             this.tabFaults = new System.Windows.Forms.TabPage();
             this.tabDataLists = new System.Windows.Forms.TabPage();
             this.lstDataMenuTXs = new System.Windows.Forms.ListView();
@@ -50,23 +56,18 @@
             this.lstActuatorTXs = new System.Windows.Forms.ListView();
             this.lstActuators = new System.Windows.Forms.ListView();
             this.tabLog = new System.Windows.Forms.TabPage();
-            this.pnlScanMenu = new System.Windows.Forms.Panel();
-            this.lblProgress = new System.Windows.Forms.Label();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.lblComPort = new System.Windows.Forms.Label();
-            this.btnConnectComPort = new System.Windows.Forms.Button();
-            this.cmbComPorts = new System.Windows.Forms.ComboBox();
-            this.cmbMuxSel = new System.Windows.Forms.ComboBox();
-            this.btnSetMux = new System.Windows.Forms.Button();
-            this.txtMsgToSend = new System.Windows.Forms.TextBox();
             this.btnSendMsg = new System.Windows.Forms.Button();
+            this.txtMsgToSend = new System.Windows.Forms.TextBox();
+            this.btnSetMux = new System.Windows.Forms.Button();
+            this.cmbMuxSel = new System.Windows.Forms.ComboBox();
+            this.cmbProtocol = new System.Windows.Forms.ComboBox();
             this.tabControl1.SuspendLayout();
             this.tabModules.SuspendLayout();
+            this.pnlScanMenu.SuspendLayout();
             this.tabDataLists.SuspendLayout();
             this.tabSystemTests.SuspendLayout();
             this.tabActuators.SuspendLayout();
             this.tabLog.SuspendLayout();
-            this.pnlScanMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // listBox1
@@ -116,6 +117,64 @@
             this.tabModules.TabIndex = 0;
             this.tabModules.Text = "Module Selection";
             this.tabModules.UseVisualStyleBackColor = true;
+            // 
+            // pnlScanMenu
+            // 
+            this.pnlScanMenu.Controls.Add(this.lblProgress);
+            this.pnlScanMenu.Controls.Add(this.progressBar1);
+            this.pnlScanMenu.Controls.Add(this.lblComPort);
+            this.pnlScanMenu.Controls.Add(this.btnConnectComPort);
+            this.pnlScanMenu.Controls.Add(this.cmbComPorts);
+            this.pnlScanMenu.Location = new System.Drawing.Point(145, 176);
+            this.pnlScanMenu.Name = "pnlScanMenu";
+            this.pnlScanMenu.Size = new System.Drawing.Size(583, 389);
+            this.pnlScanMenu.TabIndex = 1;
+            // 
+            // lblProgress
+            // 
+            this.lblProgress.Location = new System.Drawing.Point(289, 202);
+            this.lblProgress.Name = "lblProgress";
+            this.lblProgress.Size = new System.Drawing.Size(100, 23);
+            this.lblProgress.TabIndex = 4;
+            this.lblProgress.Text = "Select a COM Port.";
+            this.lblProgress.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Enabled = false;
+            this.progressBar1.Location = new System.Drawing.Point(128, 202);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(155, 23);
+            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.progressBar1.TabIndex = 3;
+            this.progressBar1.Visible = false;
+            // 
+            // lblComPort
+            // 
+            this.lblComPort.AutoSize = true;
+            this.lblComPort.Location = new System.Drawing.Point(125, 151);
+            this.lblComPort.Name = "lblComPort";
+            this.lblComPort.Size = new System.Drawing.Size(56, 13);
+            this.lblComPort.TabIndex = 2;
+            this.lblComPort.Text = "COM Port:";
+            // 
+            // btnConnectComPort
+            // 
+            this.btnConnectComPort.Location = new System.Drawing.Point(314, 146);
+            this.btnConnectComPort.Name = "btnConnectComPort";
+            this.btnConnectComPort.Size = new System.Drawing.Size(75, 23);
+            this.btnConnectComPort.TabIndex = 1;
+            this.btnConnectComPort.Text = "Connect";
+            this.btnConnectComPort.UseVisualStyleBackColor = true;
+            this.btnConnectComPort.Click += new System.EventHandler(this.btnConnectComPort_Click);
+            // 
+            // cmbComPorts
+            // 
+            this.cmbComPorts.FormattingEnabled = true;
+            this.cmbComPorts.Location = new System.Drawing.Point(187, 148);
+            this.cmbComPorts.Name = "cmbComPorts";
+            this.cmbComPorts.Size = new System.Drawing.Size(121, 21);
+            this.cmbComPorts.TabIndex = 0;
             // 
             // tabFaults
             // 
@@ -233,6 +292,7 @@
             // 
             // tabLog
             // 
+            this.tabLog.Controls.Add(this.cmbProtocol);
             this.tabLog.Controls.Add(this.btnSendMsg);
             this.tabLog.Controls.Add(this.txtMsgToSend);
             this.tabLog.Controls.Add(this.btnSetMux);
@@ -245,63 +305,32 @@
             this.tabLog.Text = "Serial Log";
             this.tabLog.UseVisualStyleBackColor = true;
             // 
-            // pnlScanMenu
+            // btnSendMsg
             // 
-            this.pnlScanMenu.Controls.Add(this.lblProgress);
-            this.pnlScanMenu.Controls.Add(this.progressBar1);
-            this.pnlScanMenu.Controls.Add(this.lblComPort);
-            this.pnlScanMenu.Controls.Add(this.btnConnectComPort);
-            this.pnlScanMenu.Controls.Add(this.cmbComPorts);
-            this.pnlScanMenu.Location = new System.Drawing.Point(145, 176);
-            this.pnlScanMenu.Name = "pnlScanMenu";
-            this.pnlScanMenu.Size = new System.Drawing.Size(583, 389);
-            this.pnlScanMenu.TabIndex = 1;
+            this.btnSendMsg.Location = new System.Drawing.Point(492, 4);
+            this.btnSendMsg.Name = "btnSendMsg";
+            this.btnSendMsg.Size = new System.Drawing.Size(75, 23);
+            this.btnSendMsg.TabIndex = 6;
+            this.btnSendMsg.Text = "Send";
+            this.btnSendMsg.UseVisualStyleBackColor = true;
+            this.btnSendMsg.Click += new System.EventHandler(this.btnSendMsg_Click);
             // 
-            // lblProgress
+            // txtMsgToSend
             // 
-            this.lblProgress.Location = new System.Drawing.Point(289, 202);
-            this.lblProgress.Name = "lblProgress";
-            this.lblProgress.Size = new System.Drawing.Size(100, 23);
-            this.lblProgress.TabIndex = 4;
-            this.lblProgress.Text = "Select a COM Port.";
-            this.lblProgress.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.txtMsgToSend.Location = new System.Drawing.Point(328, 6);
+            this.txtMsgToSend.Name = "txtMsgToSend";
+            this.txtMsgToSend.Size = new System.Drawing.Size(158, 20);
+            this.txtMsgToSend.TabIndex = 5;
             // 
-            // progressBar1
+            // btnSetMux
             // 
-            this.progressBar1.Enabled = false;
-            this.progressBar1.Location = new System.Drawing.Point(128, 202);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(155, 23);
-            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.progressBar1.TabIndex = 3;
-            this.progressBar1.Visible = false;
-            // 
-            // lblComPort
-            // 
-            this.lblComPort.AutoSize = true;
-            this.lblComPort.Location = new System.Drawing.Point(125, 151);
-            this.lblComPort.Name = "lblComPort";
-            this.lblComPort.Size = new System.Drawing.Size(56, 13);
-            this.lblComPort.TabIndex = 2;
-            this.lblComPort.Text = "COM Port:";
-            // 
-            // btnConnectComPort
-            // 
-            this.btnConnectComPort.Location = new System.Drawing.Point(314, 146);
-            this.btnConnectComPort.Name = "btnConnectComPort";
-            this.btnConnectComPort.Size = new System.Drawing.Size(75, 23);
-            this.btnConnectComPort.TabIndex = 1;
-            this.btnConnectComPort.Text = "Connect";
-            this.btnConnectComPort.UseVisualStyleBackColor = true;
-            this.btnConnectComPort.Click += new System.EventHandler(this.btnConnectComPort_Click);
-            // 
-            // cmbComPorts
-            // 
-            this.cmbComPorts.FormattingEnabled = true;
-            this.cmbComPorts.Location = new System.Drawing.Point(187, 148);
-            this.cmbComPorts.Name = "cmbComPorts";
-            this.cmbComPorts.Size = new System.Drawing.Size(121, 21);
-            this.cmbComPorts.TabIndex = 0;
+            this.btnSetMux.Location = new System.Drawing.Point(136, 4);
+            this.btnSetMux.Name = "btnSetMux";
+            this.btnSetMux.Size = new System.Drawing.Size(100, 23);
+            this.btnSetMux.TabIndex = 4;
+            this.btnSetMux.Text = "Set Mux State";
+            this.btnSetMux.UseVisualStyleBackColor = true;
+            this.btnSetMux.Click += new System.EventHandler(this.btnSetMux_Click);
             // 
             // cmbMuxSel
             // 
@@ -313,37 +342,23 @@
             "SCI B Engine",
             "SCI B Trans",
             "ISO 9141"});
-            this.cmbMuxSel.Location = new System.Drawing.Point(9, 4);
+            this.cmbMuxSel.Location = new System.Drawing.Point(9, 6);
             this.cmbMuxSel.Name = "cmbMuxSel";
             this.cmbMuxSel.Size = new System.Drawing.Size(121, 21);
             this.cmbMuxSel.TabIndex = 3;
             // 
-            // btnSetMux
+            // cmbProtocol
             // 
-            this.btnSetMux.Location = new System.Drawing.Point(136, 2);
-            this.btnSetMux.Name = "btnSetMux";
-            this.btnSetMux.Size = new System.Drawing.Size(100, 23);
-            this.btnSetMux.TabIndex = 4;
-            this.btnSetMux.Text = "Set Mux State";
-            this.btnSetMux.UseVisualStyleBackColor = true;
-            this.btnSetMux.Click += new System.EventHandler(this.btnSetMux_Click);
-            // 
-            // txtMsgToSend
-            // 
-            this.txtMsgToSend.Location = new System.Drawing.Point(328, 6);
-            this.txtMsgToSend.Name = "txtMsgToSend";
-            this.txtMsgToSend.Size = new System.Drawing.Size(158, 20);
-            this.txtMsgToSend.TabIndex = 5;
-            // 
-            // btnSendMsg
-            // 
-            this.btnSendMsg.Location = new System.Drawing.Point(492, 4);
-            this.btnSendMsg.Name = "btnSendMsg";
-            this.btnSendMsg.Size = new System.Drawing.Size(75, 23);
-            this.btnSendMsg.TabIndex = 6;
-            this.btnSendMsg.Text = "Send";
-            this.btnSendMsg.UseVisualStyleBackColor = true;
-            this.btnSendMsg.Click += new System.EventHandler(this.btnSendMsg_Click);
+            this.cmbProtocol.FormattingEnabled = true;
+            this.cmbProtocol.Items.AddRange(new object[] {
+            "SCI",
+            "J1850",
+            "CCD",
+            "ISO9141"});
+            this.cmbProtocol.Location = new System.Drawing.Point(259, 6);
+            this.cmbProtocol.Name = "cmbProtocol";
+            this.cmbProtocol.Size = new System.Drawing.Size(63, 21);
+            this.cmbProtocol.TabIndex = 7;
             // 
             // Form1
             // 
@@ -356,13 +371,13 @@
             this.Text = "Chrysler Scan Master";
             this.tabControl1.ResumeLayout(false);
             this.tabModules.ResumeLayout(false);
+            this.pnlScanMenu.ResumeLayout(false);
+            this.pnlScanMenu.PerformLayout();
             this.tabDataLists.ResumeLayout(false);
             this.tabSystemTests.ResumeLayout(false);
             this.tabActuators.ResumeLayout(false);
             this.tabLog.ResumeLayout(false);
             this.tabLog.PerformLayout();
-            this.pnlScanMenu.ResumeLayout(false);
-            this.pnlScanMenu.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -396,6 +411,7 @@
         private System.Windows.Forms.TextBox txtMsgToSend;
         private System.Windows.Forms.Button btnSetMux;
         private System.Windows.Forms.ComboBox cmbMuxSel;
+        private System.Windows.Forms.ComboBox cmbProtocol;
     }
 }
 

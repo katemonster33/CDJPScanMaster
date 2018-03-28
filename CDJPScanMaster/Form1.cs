@@ -34,6 +34,7 @@ namespace ScanMaster.UI
             listBoxUpdater.Interval = 100;
             listBoxUpdater.Tick += ListBoxUpdater_Tick;
             listBoxUpdater.Enabled = true;
+            cmbProtocol.SelectedIndex = 0;
         }
 
         void ListBoxUpdater_Tick(object sender, EventArgs e)
@@ -177,7 +178,12 @@ namespace ScanMaster.UI
             {
                 messageBytes.Add(Convert.ToByte(tok, 16));
             }
-			vlm.SendMessage(Protocol.SCI, messageBytes);
+            Protocol protToSend = Protocol.Invalid;
+            if (cmbProtocol.SelectedItem.ToString() == "SCI") protToSend = Protocol.SCI;
+            else if (cmbProtocol.SelectedItem.ToString() == "CCD") protToSend = Protocol.CCD;
+            else if (cmbProtocol.SelectedItem.ToString() == "J1850") protToSend = Protocol.J1850;
+            else if (cmbProtocol.SelectedItem.ToString() == "ISO9141") protToSend = Protocol.KWP2000;
+            vlm.SendMessage(protToSend, messageBytes);
         }
 
         private void btnSetMux_Click(object sender, EventArgs e)
