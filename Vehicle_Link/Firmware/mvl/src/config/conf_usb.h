@@ -111,7 +111,6 @@
 
 //! Interface callback definition
 #define  UDI_CDC_ENABLE_EXT(port)         true
-#define  UDI_CDC_DISABLE_EXT(port)        
 #define  UDI_CDC_RX_NOTIFY(port)          
 #define  UDI_CDC_TX_EMPTY_NOTIFY(port)
 #define  UDI_CDC_SET_CODING_EXT(port,cfg) 
