@@ -36,7 +36,7 @@ void usart_setup(USART_t* usart, uint32_t baud)
 	usart_format_set(usart, USART_CHSIZE_8BIT_gc, USART_PMODE_DISABLED_gc, false);
 	usart_set_baudrate(usart, baud, sysclk_get_per_hz());
 	usart_set_rx_interrupt_level(usart, USART_INT_LVL_LO);
-	usart->CTRLA = usart->CTRLA | USART_TXEN_bm | USART_RXEN_bm;
+	usart->CTRLB = usart->CTRLB | USART_TXEN_bm | USART_RXEN_bm;
 }
 
 uint8_t usb_rx_ring_buffer[1024];
@@ -94,7 +94,6 @@ int main (void)
 	PORTE.DIRSET = PIN_SCI_A_TX_EN;
 	PORTR.DIRSET |= PIN0_bm | PIN1_bm; // Power LED, Data LED
 	PORTR.OUTSET |= PIN0_bm; // Power LED ON
-	set_mux_config(CMD_NOOP); // reset all enable pins to default values
 	
 	// globally enable low-level interrupts in the PMIC.
 	PMIC.CTRL = PMIC_LOLVLEN_bm;
@@ -103,6 +102,7 @@ int main (void)
 	iso9141_setup();
 	ccd_setup();
 	sei();
+	set_mux_config(CMD_SET_MUX_9141); // reset all enable pins to default values
 	struct byte_buffer pendingTxJ1850, pendingTxIso9141, pendingTxCcd, pendingTxSci;
 	pendingTxJ1850.idxLast = pendingTxIso9141.idxLast = pendingTxCcd.idxLast = pendingTxSci.idxLast = 0;
 	struct byte_buffer pendingTxUsb, pendingRxUsb;
@@ -113,6 +113,7 @@ int main (void)
 		iso9141_do_tasks(&pendingTxIso9141);
 		ccd_do_tasks(&pendingTxCcd);
 		sci_do_tasks(&pendingTxSci);
+		
 		if(pendingRxUsb.idxLast != 0)
 		{
 			if((pendingRxUsb.bytes[0] & 0x80) == 0) // not a payload request, 1-byte command
@@ -156,7 +157,7 @@ int main (void)
 				pendingRxUsb.idxLast = 0;
 			}
 		}
-		if(udi_cdc_is_tx_ready() && usb_rx_begin != usb_rx_last)
+		if(usb_rx_begin != usb_rx_last && udi_cdc_is_tx_ready())
 		{
 			udi_cdc_putc(*usb_rx_begin);
 			// set idxLast to zero, this indicates buffer empty
