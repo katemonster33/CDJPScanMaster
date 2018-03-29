@@ -186,11 +186,9 @@ uint8_t ccd_calculate_crc(uint8_t *buff, uint8_t len)
 
 void ccd_setup()
 {
-	PORTC.DIRSET = PIN_CCD_TX;
-	PORTC.PIN2CTRL = PORT_ISC_RISING_gc | PORT_OPC_TOTEM_gc;
+	PORTC.PIN2CTRL = PORT_ISC_FALLING_gc | PORT_OPC_TOTEM_gc;
 	PORTC.INT0MASK |= PIN2_bm;
 	PORTC.INTCTRL = PORT_INT0LVL_LO_gc;
-	PORTC.OUTSET = PIN_CCD_TX; // write it high immediately so we aren't driving the bus accidentally
 	usart_setup(&UART_CCD, 7812);
 	usart_set_tx_interrupt_level(&UART_CCD, USART_INT_LVL_LO);
 	ccd_idle_timer_setup();
