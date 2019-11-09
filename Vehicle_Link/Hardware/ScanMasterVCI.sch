@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="8.7.0">
+<eagle version="8.4.3">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -15827,8 +15827,8 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <part name="GND10" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="R8" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="100"/>
 <part name="R16" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="100"/>
-<part name="R37" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="27.4k"/>
-<part name="R38" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="40.2k"/>
+<part name="R37" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="40.2k"/>
+<part name="R38" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="27.4k"/>
 <part name="IC2" library="linear" library_urn="urn:adsk.eagle:library:262" deviceset="TL331" device="" package3d_urn="urn:adsk.eagle:package:16494/1"/>
 <part name="R39" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="1M"/>
 <part name="GND34" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
@@ -17471,28 +17471,16 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <label x="27.94" y="66.04" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
-<net name="N$32" class="0">
-<segment>
-<pinref part="R16" gate="G$1" pin="1"/>
-<pinref part="U2" gate="G$1" pin="+"/>
-<wire x1="20.32" y1="195.58" x2="25.4" y2="195.58" width="0.1524" layer="91"/>
-<wire x1="25.4" y1="195.58" x2="33.02" y2="195.58" width="0.1524" layer="91"/>
-<wire x1="25.4" y1="195.58" x2="25.4" y2="231.14" width="0.1524" layer="91"/>
-<junction x="25.4" y="195.58"/>
-<wire x1="25.4" y1="231.14" x2="38.1" y2="231.14" width="0.1524" layer="91"/>
-<pinref part="R37" gate="G$1" pin="2"/>
-</segment>
-</net>
 <net name="N$33" class="0">
 <segment>
-<pinref part="R8" gate="G$1" pin="1"/>
-<pinref part="U2" gate="G$1" pin="-"/>
-<wire x1="20.32" y1="198.12" x2="22.86" y2="198.12" width="0.1524" layer="91"/>
-<wire x1="22.86" y1="198.12" x2="33.02" y2="198.12" width="0.1524" layer="91"/>
-<wire x1="22.86" y1="198.12" x2="22.86" y2="236.22" width="0.1524" layer="91"/>
 <wire x1="22.86" y1="236.22" x2="38.1" y2="236.22" width="0.1524" layer="91"/>
-<junction x="22.86" y="198.12"/>
 <pinref part="R38" gate="G$1" pin="2"/>
+<pinref part="R16" gate="G$1" pin="1"/>
+<pinref part="U2" gate="G$1" pin="+"/>
+<wire x1="20.32" y1="195.58" x2="22.86" y2="195.58" width="0.1524" layer="91"/>
+<wire x1="22.86" y1="195.58" x2="33.02" y2="195.58" width="0.1524" layer="91"/>
+<wire x1="22.86" y1="236.22" x2="22.86" y2="195.58" width="0.1524" layer="91"/>
+<junction x="22.86" y="195.58"/>
 </segment>
 </net>
 <net name="J1962-11" class="0">
@@ -17559,6 +17547,18 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <junction x="154.94" y="170.18"/>
 <pinref part="IC3" gate="G$1" pin="+IN"/>
 <wire x1="157.48" y1="172.72" x2="162.56" y2="172.72" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$39" class="0">
+<segment>
+<pinref part="U2" gate="G$1" pin="-"/>
+<pinref part="R8" gate="G$1" pin="1"/>
+<wire x1="20.32" y1="198.12" x2="25.4" y2="198.12" width="0.1524" layer="91"/>
+<pinref part="R37" gate="G$1" pin="2"/>
+<wire x1="25.4" y1="198.12" x2="33.02" y2="198.12" width="0.1524" layer="91"/>
+<wire x1="25.4" y1="231.14" x2="38.1" y2="231.14" width="0.1524" layer="91"/>
+<wire x1="25.4" y1="198.12" x2="25.4" y2="231.14" width="0.1524" layer="91"/>
+<junction x="25.4" y="198.12"/>
 </segment>
 </net>
 </nets>
