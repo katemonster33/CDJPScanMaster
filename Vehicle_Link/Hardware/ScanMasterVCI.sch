@@ -15812,7 +15812,6 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <part name="R33" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="1k"/>
 <part name="D2" library="diode" library_urn="urn:adsk.eagle:library:210" deviceset="DIODE-" device="SOD323-R" package3d_urn="urn:adsk.eagle:package:43437/1" value="1N4148WX"/>
 <part name="P+5" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+12V" device=""/>
-<part name="P+10" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+12V" device=""/>
 <part name="C1" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="C-US" device="C0603" value="220pF"/>
 <part name="GND7" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="Q9" library="customics" deviceset="MMPQ3904" device=""/>
@@ -15822,7 +15821,6 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <part name="R17" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="1k"/>
 <part name="R34" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="1k"/>
 <part name="R35" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="1k"/>
-<part name="R36" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="1k"/>
 <part name="P+3" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+5V" device=""/>
 <part name="GND10" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="R8" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="100"/>
@@ -15845,6 +15843,7 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <part name="R3" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="1k"/>
 <part name="GND37" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="GND45" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="R41" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R0603" value="1k"/>
 </parts>
 <sheets>
 <sheet>
@@ -16752,9 +16751,9 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <attribute name="VALUE" x="144.78" y="203.2" size="1.778" layer="96" rot="R180"/>
 </instance>
 <instance part="GND30" gate="1" x="139.7" y="160.02"/>
-<instance part="R4" gate="G$1" x="139.7" y="182.88" smashed="yes" rot="R90">
-<attribute name="NAME" x="138.43" y="181.3814" size="1.778" layer="95" rot="R180"/>
-<attribute name="VALUE" x="138.43" y="186.182" size="1.778" layer="96" rot="R180"/>
+<instance part="R4" gate="G$1" x="139.7" y="185.42" smashed="yes" rot="R90">
+<attribute name="NAME" x="138.43" y="183.9214" size="1.778" layer="95" rot="R180"/>
+<attribute name="VALUE" x="138.43" y="188.722" size="1.778" layer="96" rot="R180"/>
 </instance>
 <instance part="R6" gate="G$1" x="129.54" y="193.04" smashed="yes" rot="R90">
 <attribute name="NAME" x="128.27" y="196.6214" size="1.778" layer="95" rot="R180"/>
@@ -16817,21 +16816,20 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <attribute name="VALUE" x="10.16" y="109.22" size="1.778" layer="96" rot="R180"/>
 </instance>
 <instance part="GND6" gate="1" x="5.08" y="71.12"/>
-<instance part="R32" gate="G$1" x="-5.08" y="88.9" smashed="yes">
-<attribute name="NAME" x="-6.5786" y="90.17" size="1.778" layer="95" rot="R90"/>
-<attribute name="VALUE" x="-1.778" y="90.17" size="1.778" layer="96" rot="R90"/>
+<instance part="R32" gate="G$1" x="-12.7" y="96.52" smashed="yes" rot="R270">
+<attribute name="NAME" x="-11.43" y="98.0186" size="1.778" layer="95"/>
+<attribute name="VALUE" x="-11.43" y="93.218" size="1.778" layer="96"/>
 </instance>
-<instance part="R33" gate="G$1" x="-10.16" y="121.92" smashed="yes" rot="R270">
-<attribute name="NAME" x="-8.89" y="123.4186" size="1.778" layer="95"/>
-<attribute name="VALUE" x="-8.89" y="118.618" size="1.778" layer="96"/>
+<instance part="R33" gate="G$1" x="17.78" y="104.14" smashed="yes">
+<attribute name="NAME" x="16.2814" y="105.41" size="1.778" layer="95" rot="R90"/>
+<attribute name="VALUE" x="21.082" y="105.41" size="1.778" layer="96" rot="R90"/>
 </instance>
-<instance part="D2" gate="G$1" x="-10.16" y="111.76" smashed="yes" rot="R270">
-<attribute name="NAME" x="-7.62" y="109.7026" size="1.778" layer="95"/>
-<attribute name="VALUE" x="-7.62" y="111.9886" size="1.778" layer="96"/>
+<instance part="D2" gate="G$1" x="27.94" y="104.14" smashed="yes">
+<attribute name="NAME" x="29.9974" y="106.68" size="1.778" layer="95" rot="R90"/>
+<attribute name="VALUE" x="27.7114" y="106.68" size="1.778" layer="96" rot="R90"/>
 </instance>
-<instance part="P+5" gate="1" x="-10.16" y="132.08"/>
-<instance part="P+10" gate="1" x="-12.7" y="93.98"/>
-<instance part="C1" gate="G$1" x="-20.32" y="104.14"/>
+<instance part="P+5" gate="1" x="-12.7" y="114.3"/>
+<instance part="C1" gate="G$1" x="-20.32" y="101.6"/>
 <instance part="GND7" gate="1" x="-20.32" y="93.98"/>
 <instance part="Q9" gate="A" x="81.28" y="119.38" smashed="yes" rot="R270">
 <attribute name="NAME" x="86.36" y="119.38" size="1.778" layer="95"/>
@@ -16872,10 +16870,6 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <instance part="R35" gate="G$1" x="20.32" y="81.28" smashed="yes" rot="R90">
 <attribute name="NAME" x="19.05" y="79.7814" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="19.05" y="84.582" size="1.778" layer="96" rot="R180"/>
-</instance>
-<instance part="R36" gate="G$1" x="25.4" y="88.9" smashed="yes" rot="R180">
-<attribute name="NAME" x="26.8986" y="87.63" size="1.778" layer="95" rot="R270"/>
-<attribute name="VALUE" x="22.098" y="87.63" size="1.778" layer="96" rot="R270"/>
 </instance>
 <instance part="P+3" gate="1" x="20.32" y="96.52"/>
 <instance part="GND10" gate="1" x="35.56" y="55.88"/>
@@ -16923,6 +16917,10 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 </instance>
 <instance part="GND37" gate="1" x="154.94" y="154.94"/>
 <instance part="GND45" gate="1" x="154.94" y="152.4"/>
+<instance part="R41" gate="G$1" x="50.8" y="88.9" smashed="yes" rot="R180">
+<attribute name="NAME" x="52.2986" y="87.63" size="1.778" layer="95" rot="R270"/>
+<attribute name="VALUE" x="47.498" y="87.63" size="1.778" layer="96" rot="R270"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -17029,7 +17027,6 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <segment>
 <pinref part="GND7" gate="1" pin="GND"/>
 <pinref part="C1" gate="G$1" pin="2"/>
-<wire x1="-20.32" y1="96.52" x2="-20.32" y2="99.06" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="Q3" gate="G$1" pin="E"/>
@@ -17073,11 +17070,12 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 </segment>
 <segment>
 <pinref part="R35" gate="G$1" pin="2"/>
-<pinref part="R36" gate="G$1" pin="2"/>
 <wire x1="20.32" y1="86.36" x2="20.32" y2="88.9" width="0.1524" layer="91"/>
-<wire x1="20.32" y1="88.9" x2="20.32" y2="93.98" width="0.1524" layer="91"/>
-<junction x="20.32" y="88.9"/>
 <pinref part="P+3" gate="1" pin="+5V"/>
+<pinref part="Q4" gate="G$1" pin="E"/>
+<wire x1="20.32" y1="88.9" x2="20.32" y2="93.98" width="0.1524" layer="91"/>
+<wire x1="20.32" y1="88.9" x2="30.48" y2="88.9" width="0.1524" layer="91"/>
+<junction x="20.32" y="88.9"/>
 </segment>
 </net>
 <net name="J1850VPW-TX" class="0">
@@ -17117,15 +17115,16 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <wire x1="33.02" y1="162.56" x2="33.02" y2="157.48" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="R33" gate="G$1" pin="1"/>
+<pinref part="Q8" gate="G$1" pin="E"/>
+<pinref part="C1" gate="G$1" pin="1"/>
+<wire x1="0" y1="104.14" x2="-12.7" y2="104.14" width="0.1524" layer="91"/>
 <pinref part="P+5" gate="1" pin="+12V"/>
-<wire x1="-10.16" y1="129.54" x2="-10.16" y2="127" width="0.1524" layer="91"/>
-</segment>
-<segment>
+<wire x1="-12.7" y1="104.14" x2="-20.32" y2="104.14" width="0.1524" layer="91"/>
+<wire x1="-12.7" y1="104.14" x2="-12.7" y2="111.76" width="0.1524" layer="91"/>
+<junction x="-12.7" y="104.14"/>
 <pinref part="R32" gate="G$1" pin="1"/>
-<wire x1="-10.16" y1="88.9" x2="-12.7" y2="88.9" width="0.1524" layer="91"/>
-<pinref part="P+10" gate="1" pin="+12V"/>
-<wire x1="-12.7" y1="88.9" x2="-12.7" y2="91.44" width="0.1524" layer="91"/>
+<wire x1="-12.7" y1="101.6" x2="-12.7" y2="104.14" width="0.1524" layer="91"/>
+<junction x="-12.7" y="104.14"/>
 </segment>
 </net>
 <net name="ISO-K-TX" class="0">
@@ -17254,19 +17253,21 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 </net>
 <net name="N$26" class="0">
 <segment>
-<pinref part="Q2" gate="G$1" pin="C"/>
+<pinref part="R6" gate="G$1" pin="1"/>
+<wire x1="129.54" y1="187.96" x2="129.54" y2="177.8" width="0.1524" layer="91"/>
 <pinref part="R4" gate="G$1" pin="1"/>
+<pinref part="Q2" gate="G$1" pin="C"/>
 <wire x1="139.7" y1="175.26" x2="139.7" y2="177.8" width="0.1524" layer="91"/>
+<wire x1="139.7" y1="177.8" x2="139.7" y2="180.34" width="0.1524" layer="91"/>
+<wire x1="129.54" y1="177.8" x2="139.7" y2="177.8" width="0.1524" layer="91"/>
+<junction x="139.7" y="177.8"/>
 </segment>
 </net>
 <net name="N$28" class="0">
 <segment>
 <pinref part="R4" gate="G$1" pin="2"/>
-<pinref part="R6" gate="G$1" pin="1"/>
-<wire x1="129.54" y1="187.96" x2="139.7" y2="187.96" width="0.1524" layer="91"/>
 <pinref part="Q1" gate="G$1" pin="B"/>
-<wire x1="139.7" y1="193.04" x2="139.7" y2="187.96" width="0.1524" layer="91"/>
-<junction x="139.7" y="187.96"/>
+<wire x1="139.7" y1="193.04" x2="139.7" y2="190.5" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$29" class="0">
@@ -17385,11 +17386,12 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 </net>
 <net name="N$4" class="0">
 <segment>
-<wire x1="5.08" y1="88.9" x2="0" y2="88.9" width="0.1524" layer="91"/>
-<pinref part="R32" gate="G$1" pin="2"/>
 <pinref part="R15" gate="G$1" pin="1"/>
 <pinref part="Q7" gate="G$1" pin="C"/>
 <wire x1="5.08" y1="88.9" x2="5.08" y2="86.36" width="0.1524" layer="91"/>
+<pinref part="R32" gate="G$1" pin="2"/>
+<wire x1="-12.7" y1="91.44" x2="-12.7" y2="88.9" width="0.1524" layer="91"/>
+<wire x1="-12.7" y1="88.9" x2="5.08" y2="88.9" width="0.1524" layer="91"/>
 <junction x="5.08" y="88.9"/>
 </segment>
 </net>
@@ -17397,26 +17399,14 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <segment>
 <pinref part="R33" gate="G$1" pin="2"/>
 <pinref part="D2" gate="G$1" pin="A"/>
-<wire x1="-10.16" y1="116.84" x2="-10.16" y2="114.3" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="N$21" class="0">
-<segment>
-<pinref part="D2" gate="G$1" pin="C"/>
-<pinref part="Q8" gate="G$1" pin="E"/>
-<wire x1="-10.16" y1="109.22" x2="-10.16" y2="106.68" width="0.1524" layer="91"/>
-<wire x1="-10.16" y1="106.68" x2="-10.16" y2="104.14" width="0.1524" layer="91"/>
-<wire x1="-10.16" y1="104.14" x2="0" y2="104.14" width="0.1524" layer="91"/>
-<pinref part="C1" gate="G$1" pin="1"/>
-<wire x1="-10.16" y1="106.68" x2="-20.32" y2="106.68" width="0.1524" layer="91"/>
-<junction x="-10.16" y="106.68"/>
+<wire x1="22.86" y1="104.14" x2="25.4" y2="104.14" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="J1962-7" class="0">
 <segment>
-<pinref part="Q8" gate="G$1" pin="C"/>
-<wire x1="10.16" y1="104.14" x2="17.78" y2="104.14" width="0.1524" layer="91"/>
-<label x="17.78" y="104.14" size="1.27" layer="95" xref="yes"/>
+<label x="33.02" y="104.14" size="1.27" layer="95" xref="yes"/>
+<wire x1="30.48" y1="104.14" x2="33.02" y2="104.14" width="0.1524" layer="91"/>
+<pinref part="D2" gate="G$1" pin="C"/>
 </segment>
 <segment>
 <pinref part="U3" gate="G$1" pin="LIN"/>
@@ -17424,9 +17414,9 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <label x="66.04" y="139.7" size="1.27" layer="95" xref="yes"/>
 </segment>
 <segment>
-<pinref part="Q4" gate="G$1" pin="C"/>
-<wire x1="43.18" y1="88.9" x2="40.64" y2="88.9" width="0.1524" layer="91"/>
-<label x="43.18" y="88.9" size="1.27" layer="95" xref="yes"/>
+<wire x1="60.96" y1="88.9" x2="55.88" y2="88.9" width="0.1524" layer="91"/>
+<label x="60.96" y="88.9" size="1.27" layer="95" xref="yes"/>
+<pinref part="R41" gate="G$1" pin="1"/>
 </segment>
 </net>
 <net name="N$8" class="0">
@@ -17456,12 +17446,6 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <pinref part="Q3" gate="G$1" pin="C"/>
 <wire x1="35.56" y1="71.12" x2="35.56" y2="73.66" width="0.1524" layer="91"/>
 <junction x="35.56" y="73.66"/>
-</segment>
-</net>
-<net name="N$31" class="0">
-<segment>
-<pinref part="Q4" gate="G$1" pin="E"/>
-<pinref part="R36" gate="G$1" pin="1"/>
 </segment>
 </net>
 <net name="SCI-A-RX-EN" class="0">
@@ -17559,6 +17543,20 @@ Source: &lt;a href="http://www.ti.com/lit/ds/symlink/tl331-q1.pdf"&gt; Data shee
 <wire x1="25.4" y1="231.14" x2="38.1" y2="231.14" width="0.1524" layer="91"/>
 <wire x1="25.4" y1="198.12" x2="25.4" y2="231.14" width="0.1524" layer="91"/>
 <junction x="25.4" y="198.12"/>
+</segment>
+</net>
+<net name="N$31" class="0">
+<segment>
+<pinref part="Q4" gate="G$1" pin="C"/>
+<pinref part="R41" gate="G$1" pin="2"/>
+<wire x1="45.72" y1="88.9" x2="40.64" y2="88.9" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="N$32" class="0">
+<segment>
+<pinref part="R33" gate="G$1" pin="1"/>
+<pinref part="Q8" gate="G$1" pin="C"/>
+<wire x1="10.16" y1="104.14" x2="12.7" y2="104.14" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
