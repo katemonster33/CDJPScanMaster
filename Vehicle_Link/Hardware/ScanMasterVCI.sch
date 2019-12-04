@@ -8648,18 +8648,18 @@ Source: &lt;a href="https://www.st.com/content/ccc/resource/technical/document/d
 <wire x1="-6.35" y1="-2.5" x2="6.35" y2="-2.5" width="0.127" layer="21"/>
 <wire x1="6.35" y1="-2.5" x2="6.35" y2="2.5" width="0.127" layer="21"/>
 <wire x1="6.35" y1="2.5" x2="-6.35" y2="2.5" width="0.127" layer="21"/>
-<pad name="P$1" x="-5" y="1" drill="0.65"/>
-<pad name="P$2" x="-3" y="1" drill="0.65"/>
-<pad name="P$3" x="-1" y="1" drill="0.65"/>
-<pad name="P$4" x="1" y="1" drill="0.65"/>
-<pad name="P$5" x="3" y="1" drill="0.65"/>
-<pad name="P$6" x="5" y="1" drill="0.65"/>
-<pad name="P$7" x="-5" y="-1" drill="0.65"/>
-<pad name="P$8" x="-3" y="-1" drill="0.65"/>
-<pad name="P$9" x="-1" y="-1" drill="0.65"/>
-<pad name="P$10" x="1" y="-1" drill="0.65"/>
-<pad name="P$11" x="3" y="-1" drill="0.65"/>
-<pad name="P$12" x="5" y="-1" drill="0.65"/>
+<pad name="P$1" x="-5" y="-1" drill="0.65"/>
+<pad name="P$2" x="-3" y="-1" drill="0.65"/>
+<pad name="P$3" x="-1" y="-1" drill="0.65"/>
+<pad name="P$4" x="1" y="-1" drill="0.65"/>
+<pad name="P$5" x="3" y="-1" drill="0.65"/>
+<pad name="P$6" x="5" y="-1" drill="0.65"/>
+<pad name="P$7" x="-5" y="1" drill="0.65"/>
+<pad name="P$8" x="-3" y="1" drill="0.65"/>
+<pad name="P$9" x="-1" y="1" drill="0.65"/>
+<pad name="P$10" x="1" y="1" drill="0.65"/>
+<pad name="P$11" x="3" y="1" drill="0.65"/>
+<pad name="P$12" x="5" y="1" drill="0.65"/>
 </package>
 </packages>
 <symbols>
