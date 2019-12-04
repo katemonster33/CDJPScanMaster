@@ -17293,7 +17293,7 @@ wave soldering</description>
 <label x="15.24" y="15.24" size="1.4224" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
-<net name="N$14" class="0">
+<net name="CVBATT" class="1">
 <segment>
 <wire x1="88.9" y1="187.96" x2="88.9" y2="167.64" width="0.1524" layer="91"/>
 <wire x1="88.9" y1="167.64" x2="22.86" y2="167.64" width="0.1524" layer="91"/>
@@ -17337,13 +17337,17 @@ wave soldering</description>
 <wire x1="45.72" y1="175.26" x2="99.06" y2="175.26" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$40" class="0">
+<net name="CGND" class="1">
 <segment>
 <pinref part="C18" gate="G$1" pin="5"/>
 <pinref part="C18" gate="G$1" pin="4"/>
 <wire x1="43.18" y1="190.5" x2="38.1" y2="190.5" width="0.1524" layer="91"/>
 <wire x1="38.1" y1="195.58" x2="43.18" y2="195.58" width="0.1524" layer="91"/>
 <wire x1="43.18" y1="195.58" x2="43.18" y2="190.5" width="0.1524" layer="91"/>
+<wire x1="43.18" y1="190.5" x2="43.18" y2="187.96" width="0.1524" layer="91"/>
+<junction x="43.18" y="190.5"/>
+<pinref part="U$2" gate="G$1" pin="12"/>
+<wire x1="43.18" y1="187.96" x2="76.2" y2="187.96" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$42" class="0">
