@@ -11,8 +11,8 @@
 #include "definitions.h"
 #include "asf.h"
 
-void usb_queue_cmd(uint8_t cmd);
-void usb_queue_rx(uint8_t *srcBuffer, uint8_t srcBufferLen, uint8_t protocol);
+void bt_queue_cmd(uint8_t cmd);
+void bt_queue_rx(uint8_t *srcBuffer, uint8_t srcBufferLen, uint8_t protocol);
 
 void usart_setup(USART_t *usart, uint32_t baud);
 void set_mux_config(uint8_t cmd);

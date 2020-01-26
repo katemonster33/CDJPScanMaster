@@ -26,7 +26,6 @@ bool busIdle = false;
 
 void sci_setup(void)
 {
-	PORTE.PIN2CTRL = PORT_OPC_PULLUP_gc;
 	usart_setup(&UART_SCI, 7812);
 	//sci_idle_timer_setup();
 	currentBitTime = 128 / 2; // 128 uS * (1 uS / 2 ticks) = 64 ticks
@@ -79,7 +78,7 @@ ISR(USARTE0_RXC_vect)
 	}
 	else
 	{
-		usb_queue_rx(recv_buff, recv_buff_len, PAYLOAD_PROTOCOL_SCI);
+		bt_queue_rx(recv_buff, recv_buff_len, PAYLOAD_PROTOCOL_SCI);
 		recv_buff_len = 0;
 	}
 }

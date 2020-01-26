@@ -59,7 +59,7 @@ void iso9141_idle_timeout_callback(void)
 	iso9141_bus_idle = true;
 	if(iso9141_rx_buffer_len != 0)
 	{
-		usb_queue_rx(iso9141_rx_buffer, iso9141_rx_buffer_len, PAYLOAD_PROTOCOL_ISO9141);
+		bt_queue_rx(iso9141_rx_buffer, iso9141_rx_buffer_len, PAYLOAD_PROTOCOL_ISO9141);
 		iso9141_rx_buffer_len = 0;	
 	}
 }
@@ -99,7 +99,6 @@ void iso9141_setup()
 {
 	iso9141_bus_idle = true;
 	iso9141_rx_buffer_len = 0;
-	PORTD.PIN2CTRL = PORT_OPC_PULLUP_gc; // enable the pull-up resistor to accept the open-drain output of the SN65HVDA195
 	usart_setup(&UART_ISO9141, 10400);
 	tc_enable(&ISO9141_TIMER);
 	ISO9141_TIMER.CTRLB = TC_WGMODE_NORMAL_gc ; // no waveform generation, no compare/capture
@@ -143,7 +142,7 @@ void iso9141_start_five_baud_init()
 void iso9141_five_baud_finish(uint8_t rc)
 {
 	UART_ISO9141.CTRLB |= (USART_TXEN_bm | USART_RXEN_bm);
-	usb_queue_cmd(rc);
+	bt_queue_cmd(rc);
 }
 
 uint8_t iso9141_checksum(uint8_t *buffer, uint8_t len)
@@ -231,8 +230,8 @@ ISR(USARTD0_RXC_vect)
 			iso9141_init_active = false;
 			if(recvData == 0xCC) // valid address
 			{
-				usb_queue_cmd(RC_SUCCESS);
-				usb_queue_rx(iso9141_rx_buffer, iso9141_rx_buffer_len, PAYLOAD_PROTOCOL_ISO9141);
+				bt_queue_cmd(RC_SUCCESS);
+				bt_queue_rx(iso9141_rx_buffer, iso9141_rx_buffer_len, PAYLOAD_PROTOCOL_ISO9141);
 				iso9141_rx_buffer_len = 0;
 				// bus will be considered idle when p3_min has elapsed
 				iso9141_bus_idle = false;

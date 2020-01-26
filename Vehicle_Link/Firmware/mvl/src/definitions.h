@@ -18,14 +18,13 @@
 #define RC_SUCCESS				64
 #define RC_FAIL					65
 
-#define PIN_SCI_A_ENGINE_RX_EN	PIN0_bm // PORT B, active high
-#define PIN_SCI_B_ENGINE_RX_EN	PIN1_bm // PORT B, active high
-#define PIN_SCI_A_TRANS_RX_EN	PIN2_bm // PORT B, active high
-#define PIN_SCI_B_TRANS_RX_EN	PIN3_bm // PORT B, active high
+#define PIN_SCI_A_TX_EN			PIN0_bm // PORT B, active HIGH
+#define PIN_SCI_B_TX_EN			PIN1_bm // PORT B, active HIGH
 
-#define PIN_ISO_K_EN			PIN5_bm // PORT D, active low
+#define PIN_ISO_K_EN			PIN5_bm // PORT D, active HIGH
 
-#define PIN_SCI_A_TX_EN			PIN0_bm // PORT E, active low
+#define PIN_SCI_A_RX_EN			PIN4_bm // PORT C, active HIGH
+#define PIN_SCI_B_RX_EN			PIN5_bm // PORT C, active HIGH
 #define PIN_SCI_RX				PIN2_bm // PORT E
 #define PIN_SCI_TX				PIN3_bm // PORT E
 
