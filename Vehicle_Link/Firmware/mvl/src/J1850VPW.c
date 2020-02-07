@@ -89,7 +89,7 @@ void j1850vpw_do_tasks(struct byte_buffer *txBuffer)
 			if(crc == j1850_rx_buffer[j1850_rx_buffer_len - 1])
 			{
 				j1850_rx_buffer_len--;
-				usb_queue_rx(j1850_rx_buffer, j1850_rx_buffer_len, PAYLOAD_PROTOCOL_J1850);
+				bt_queue_rx(j1850_rx_buffer, j1850_rx_buffer_len, PAYLOAD_PROTOCOL_J1850);
 			}
 			j1850_rx_buffer_len = 0;
 		}

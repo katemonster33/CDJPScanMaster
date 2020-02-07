@@ -102,7 +102,7 @@ void ccd_idle_timer_callback()
 	uint8_t checksum = ccd_calculate_crc(ccd_rx_buffer, ccd_rx_buffer_len - 1);
 	if(checksum == ccd_rx_buffer[ccd_rx_buffer_len - 1])
 	{
-		usb_queue_rx(ccd_rx_buffer, ccd_rx_buffer_len - 1, PAYLOAD_PROTOCOL_CCD);	
+		bt_queue_rx(ccd_rx_buffer, ccd_rx_buffer_len - 1, PAYLOAD_PROTOCOL_CCD);	
 	}
 	ccd_rx_buffer_len = 0;
 	ccd_bus_idle = true;
@@ -209,7 +209,7 @@ void ccd_do_tasks(struct byte_buffer *txBuffer)
 	}
 }
 
-ISR(USARTC0_TXC_vect)
+ISR(USARTC0_DRE_vect)
 {
 	if(ccd_tx_current_byte < ccd_tx_buffer_len)
 	{
