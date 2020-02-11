@@ -7721,7 +7721,7 @@ Source: &lt;a href="https://www.st.com/content/ccc/resource/technical/document/d
 <rectangle x1="0.05" y1="1" x2="0.45" y2="1.8" layer="29"/>
 <rectangle x1="0.55" y1="1" x2="0.95" y2="1.8" layer="29"/>
 <circle x="-1.17" y="1.17" radius="0.1" width="0.127" layer="21"/>
-<smd name="PAD" x="0" y="0" dx="1.7" dy="1.7" layer="1"/>
+<smd name="PAD" x="0" y="0" dx="1.4" dy="1.4" layer="1"/>
 </package>
 <package name="L_YUDEN_NR6028">
 <smd name="P$1" x="2.85" y="0" dx="1.6" dy="4.7" layer="1"/>
@@ -15825,8 +15825,8 @@ SMD chip inductor</description>
 <part name="C9" library="SparkFun-Capacitors" library_urn="urn:adsk.eagle:library:510" deviceset="10UF" device="-0603-6.3V-20%" package3d_urn="urn:adsk.eagle:package:37414/1" value="10uF"/>
 <part name="C11" library="SparkFun-Capacitors" library_urn="urn:adsk.eagle:library:510" deviceset="10UF" device="-0603-6.3V-20%" package3d_urn="urn:adsk.eagle:package:37414/1" value="10uF"/>
 <part name="C12" library="SparkFun-Capacitors" library_urn="urn:adsk.eagle:library:510" deviceset="0.1UF" device="-0603-25V-(+80/-20%)" package3d_urn="urn:adsk.eagle:package:37414/1" value="0.1uF"/>
-<part name="L1" library="inductor-neosid" library_urn="urn:adsk.eagle:library:241" deviceset="SM-1206" device="" package3d_urn="urn:adsk.eagle:package:14693/2"/>
-<part name="L2" library="inductor-neosid" library_urn="urn:adsk.eagle:library:241" deviceset="SM-1206" device="" package3d_urn="urn:adsk.eagle:package:14693/2"/>
+<part name="L1" library="inductor-neosid" library_urn="urn:adsk.eagle:library:241" deviceset="SM-1206" device="" package3d_urn="urn:adsk.eagle:package:14693/2" value="6.8uH"/>
+<part name="L2" library="inductor-neosid" library_urn="urn:adsk.eagle:library:241" deviceset="SM-1206" device="" package3d_urn="urn:adsk.eagle:package:14693/2" value="6.8uH"/>
 <part name="D3" library="customics" deviceset="SM5817PL" device=""/>
 <part name="D4" library="customics" deviceset="SM5817PL" device=""/>
 <part name="GND12" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
